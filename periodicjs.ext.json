@@ -1,0 +1,21 @@
+{
+	"periodicCompatibility":"5.0.0",
+	"periodicDependencies": [],
+	"periodicjs.ext.admin": {
+		"menu": {
+			"Extensions": {
+				"clouduploads":{
+					"userprivilege":"110",
+					"tree-item": "file",
+			    "tree-item-label": "Cloud Uploads",
+			    "tree-item-id": "clouduploads.settings",
+			    "tree-item-link": "/%locals.adminPath%/extension/periodicjs.ext.clouduploads",
+			    "tree-item-attributes": {
+			      "class": "async-admin-ajax-link",
+			      "title": "Cloud upload settings"
+			    }
+				}
+			}
+		}
+	}
+}
