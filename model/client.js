@@ -58,10 +58,10 @@ clientSchema.pre('save', function (next, done) {
 		next(new Error('Invalid Name'));
 	}
 	else {
-		console.log('clientSchema pre validation');
+		// console.log('clientSchema pre validation');
 		let crypto_client_id = () => {
 	    return new Promise((resolve,reject) => {
-	    	console.log('this.user_id',this.user_id);
+	    	// console.log('this.user_id',this.user_id);
 	    crypto.pbkdf2(this.user_id+new Date(), salt, 10, 16, 'sha512', (err, key) => {
 	        if (err) {
 	            reject(err);
@@ -74,7 +74,6 @@ clientSchema.pre('save', function (next, done) {
 		};
 		let crypto_client_secret = () => {
 	    return new Promise((resolve,reject) => {
-	    	console.log('this.random',this.random);
 	    crypto.pbkdf2(this.random+new Date(), salt, 10, 16, 'sha512', (err, key) => {
 	        if (err) {
 	            reject(err);

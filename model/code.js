@@ -15,14 +15,6 @@ var CodeSchema = new Schema({
 		type: Date,
 		'default': Date.now
 	},
-	name: {
-		type: String,
-		required: true,
-		index: {
-			unique: true
-		}
-	},
-	title: String,
   value: { type: String, required: true },
 	user_id: {
 		type: ObjectId,
@@ -33,10 +25,31 @@ var CodeSchema = new Schema({
 		'default': 'user'
 	},
   redirect_uri: { type: String, required: true },
-  client_id: { type: String, required: true }
+  client_id: {
+		type: ObjectId,
+		ref: 'Client'
+	}
 });
 
 // CodeSchema.pre('save', function (next) {
+// 	let salt = crypto.randomBytes(16).toString('base64');
+// 	if (!this.user_id) {
+// 		next(new Error('Invalid User Id'));
+// 	}
+// 	else if (!this.client_id) {
+// 		next(new Error('Invalid Client Id'));
+// 	}
+// 	else{
+// 		crypto.pbkdf2(this.client_id+new Date(), salt, 10, 16, 'sha512', (err, key) => {
+//       if (err) {
+//         next(err);
+//       }
+//       else{
+//       	this.value=	key.toString('base64');
+//         next();
+//       }
+//     });
+// 	}
 // });
 
 // CodeSchema.post('init', function (doc) {

@@ -15,14 +15,6 @@ var TokenSchema = new Schema({
 		type: Date,
 		'default': Date.now
 	},
-	name: {
-		type: String,
-		required: true,
-		index: {
-			unique: true
-		}
-	},
-	title: String,
   value: { type: String, required: true },
 	user_id: {
 		type: ObjectId,
@@ -32,7 +24,10 @@ var TokenSchema = new Schema({
 		type: String,
 		'default': 'user'
 	},
-  client_id: { type: String, required: true }
+  client_id: {
+		type: ObjectId,
+		ref: 'Client'
+	}
 });
 
 // TokenSchema.pre('save', function (next) {

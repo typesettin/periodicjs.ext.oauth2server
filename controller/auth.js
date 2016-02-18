@@ -1,6 +1,7 @@
 'use strict';
 
 var path = require('path'),
+	capitalize = require('capitalize'),
 	CoreExtension,
 	CoreUtilities,
 	CoreController,
@@ -17,13 +18,46 @@ var configurePassport = function(){
 	passport.use('client-basic', new BasicStrategy(
 	  function(username, password, callback) {
 	    Client.findOne({ client_id: username }, function (err, client) {
-	      if (err) { return callback(err); }
+	      if (err) { 
+	      	return callback(err); 
+	      }
+	      else if (!client || client.client_secret !== password) { 
+		      // No client found with that id or bad password
+	      	return callback(null, false); 
+	      }
+	      else{
+		      // Success
+		      return callback(null, client);
+	      }
+	    });
+	  }
+	));
 
-	      // No client found with that id or bad password
-	      if (!client || client.client_secret !== password) { return callback(null, false); }
-
-	      // Success
-	      return callback(null, client);
+	passport.use(new BearerStrategy(
+	  function(accessToken, callback) {
+	  	var UserModelToQuery;
+	    Token.findOne({value: accessToken }, function (err, token) {
+	      if (err) { 
+	      	return callback(err); 
+	      }
+	      else if (!token) {// No token found
+	      	return callback(null, false); 
+	      }
+	      else{
+	      	UserModelToQuery = mongoose.model(capitalize(token.user_entity_type));
+		      UserModelToQuery.findOne({ _id: token.user_id }, function (err, user) {
+		        if (err) { 
+		        	return callback(err); 
+		        }
+		        else if (!user) { // No user found
+		        	return callback(null, false); 
+		        }
+		        else{
+			        // Simple example with no scope
+			        callback(null, user, { scope: '*' });
+		        }
+		      });
+	      }
 	    });
 	  }
 	));
@@ -35,8 +69,15 @@ var set_client_data = function( req, res, next) {
 	next();
 };
 
-
-
+var get_user_profile = function(req, res){
+ 	res.send({
+ 		_id:req.user._id,
+ 		updatedat:req.user.updatedat,
+ 		createdat:req.user.createdat,
+ 		entitytype:req.user.entitytype,
+ 		username:req.user.username,
+ 	});
+};
 
 /**
  * cloudupload controller
@@ -69,7 +110,11 @@ var controller = function (resources) {
 	configurePassport();
 	return {
 		set_client_data : set_client_data,
-		isClientAuthenticated : passport.authenticate('client-basic', { session : false })
+		isClientAuthenticated : passport.authenticate('client-basic', { session : false }),
+		isBearerAuthenticated : passport.authenticate('bearer', { session: false }),
+		ensureApiAuthenticated : passport.authenticate('bearer', { session: false }),
+		isAuthenticated : passport.authenticate([ 'bearer'], { session: false }),
+		get_user_profile: get_user_profile
 	}
 };
 

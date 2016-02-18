@@ -5,7 +5,7 @@
 <% var genericdoctypeplurallink = "clients" %>
 <% var genericdoccount = clientscount %>
 <% var genericdocpages = clientpages %>
-<% var genericdoc_tktouse = "createdat,updatedat,title,name,content,contenttypes,clients,categories,assets,primaryasset,authors,primaryauthor,changes" %>
+<% var genericdoc_tktouse = "createdat,updatedat,title,name,user_id,user_entity_type,client_id" %>
 <% var genericdocusemodal = true; %>
 <div class="ts-container">
   <div class="ts-page-content-container">
@@ -45,7 +45,7 @@
 					jsontablehtml += '<td>' + obj.client_id + '</td>';
 					jsontablehtml += '<td>' + obj.client_secret + '</td>'; 
 
-					jsontablehtml += '<td> <a href="/p-admin/oauth/'+genericdoctypename+'/' + obj._id + '/edit" class="async-admin-ajax-link">edit</a>';
+					jsontablehtml += '<td> <a href="/p-admin/oauth/'+genericdoctypename+'/' + obj._id + '" class="async-admin-ajax-link">edit</a>';
 					jsontablehtml += ' | <a alt="delete" class=" ts-dialog-delete" data-href="/p-admin/oauth/'+genericdoctypeplurallink+'/' + obj._id + '/delete" data-deleted-redirect-href="/p-admin/oauth/'+genericdoctypeplurallink+'">delete</a>	</td>';
 					return jsontablehtml;
 				}

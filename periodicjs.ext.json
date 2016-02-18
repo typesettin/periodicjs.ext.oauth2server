@@ -7,7 +7,7 @@
       "extname":"periodicjs.ext.login",
       "version":"~6.0.0"
     }],
-	"periodicjs.ext.admin": {
+	"periodicjs.ext.asyncadmin": {
 		"menu": {
 			"Extensions": {
 				"oauth2server":{
