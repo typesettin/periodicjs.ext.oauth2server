@@ -8,7 +8,8 @@ var path = require('path'),
 	logger,
 	passport,
 	mongoose,
-	Client;
+	Client,
+	Token;
 var BasicStrategy = require('passport-http').BasicStrategy;
 var BearerStrategy = require('passport-http-bearer').Strategy;
 
@@ -30,7 +31,7 @@ var configurePassport = function(){
 
 var set_client_data = function( req, res, next) {
 	req.body.user_id = req.user._id;
-	req.body.user_entity_type = req.user.entity_type;
+	req.body.user_entity_type = req.user.entitytype;
 	next();
 };
 
@@ -63,6 +64,7 @@ var controller = function (resources) {
 	CoreUtilities = resources.core.utilities;
 	CoreExtension = resources.core.extension;
 	Client = resources.mongoose.model('Client');
+	Token = resources.mongoose.model('Token');
 
 	configurePassport();
 	return {
