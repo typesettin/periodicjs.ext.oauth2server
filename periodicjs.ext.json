@@ -1,19 +1,40 @@
 {
 	"periodicCompatibility":"5.0.0",
-	"periodicDependencies": [],
+	"periodicDependencies": [{
+      "extname":"periodicjs.ext.asyncadmin",
+      "version":"~6.0.0"
+    },{
+      "extname":"periodicjs.ext.login",
+      "version":"~6.0.0"
+    }],
 	"periodicjs.ext.admin": {
 		"menu": {
 			"Extensions": {
-				"clouduploads":{
+				"oauth2server":{
 					"userprivilege":"110",
-					"tree-item": "file",
-			    "tree-item-label": "Cloud Uploads",
-			    "tree-item-id": "clouduploads.settings",
-			    "tree-item-link": "/%locals.adminPath%/extension/periodicjs.ext.clouduploads",
+          "tree-item": "folder",
+			    "tree-item-label": "OAuth 2 Server",
+			    "tree-item-id": "oauth2server.settings",
+			    "tree-item-link": "/%locals.adminPath%/extension/periodicjs.ext.oauth2server",
+          "tree-item-input-attributes": {
+            "checked": "checked"
+					},
 			    "tree-item-attributes": {
-			      "class": "async-admin-ajax-link",
-			      "title": "Cloud upload settings"
-			    }
+			      "title": "OAUTH 2 settings",
+            "style": "background-image: url(/images/adminui/svg/shield90.svg);"
+			    },
+			    "tree-item-folder-contents": [
+			    	{
+              "tree-item": "file",
+              "tree-item-label": "Clients",
+              "tree-item-id": "oauth2server.clients.all",
+              "tree-item-link": "/%locals.adminPath%/oauth/client/",
+              "tree-item-attributes": {
+                "class": "async-admin-ajax-link",
+                "title": "OAUTH 2 Clients"
+              }
+            }
+          ]          
 				}
 			}
 		}

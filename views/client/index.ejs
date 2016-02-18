@@ -1,0 +1,65 @@
+<% include ../shared/header %>
+<% var genericdoctype = "Client" %>
+<% var genericdoctypelink = "client" %>
+<% var genericdoctypename = "client" %>
+<% var genericdoctypeplurallink = "clients" %>
+<% var genericdoccount = clientscount %>
+<% var genericdocpages = clientpages %>
+<% var genericdoc_tktouse = "createdat,updatedat,title,name,content,contenttypes,clients,categories,assets,primaryasset,authors,primaryauthor,changes" %>
+<% var genericdocusemodal = true; %>
+<div class="ts-container">
+  <div class="ts-page-content-container">
+    <% include ../shared/genericdoc_search_filters %>
+    <!-- < % clients.forEach(function(genericdoc,i){%>
+    < % include ../shared/genericdoc_list_taxonomy %>
+    < %})%> -->
+    <%- locals.get_data_table_html({
+			data: clients,
+			data_attributes:[
+				{label:'Title',sortactive:true,sortid:'title',sortorder:'asc'},
+				{label:'Create Date',sortactive:true,sortid:'createdat',sortorder:'asc'},
+				{label:'Token'},
+				{label:'Secret'},
+				// {label:'Authors'},
+				// {label:'Content Types'},
+				// {label:'Tags'},
+				// {label:'Categories'},
+				{label:'Options'},
+			],
+			responsive_table :true,
+			responsive_collapse: locals.default_responsive_collapse({
+				editlink: '/'+locals.adminPath+'/'+genericdoctypeplurallink+'/|||_id|||',
+				deletelink: '/'+locals.adminPath +'/'+genericdoctypeplurallink+'/|||_id|||/delete',
+				deleterefreshlink: '/'+locals.adminPath +'/'+genericdoctypeplurallink+'/'
+			}),
+			responsive_expand:locals.default_responsive_expand(),
+			thead:locals.default_thead(),
+			tbody:{
+				tag: 'tr',
+				style: 'vertical-align:top;',
+				html: function (obj) {
+					var jsontablehtml;
+					// jsontablehtml = '<td><a href="/' + options.adminPath + '/' + content_path + '/' + obj.identification.guid + '"  class="async-admin-ajax-link">' + obj.identification.guid + '</a></td>';
+					jsontablehtml = '<td><a href="/p-admin/oauth/'+genericdoctypename+'/' + obj._id + '" class="async-admin-ajax-link">' + obj.title + '</a></td>'; 
+					jsontablehtml += '<td>' + new locals.viewhelper.moment(obj.createdat).format('MM/DD/YYYY |  hh:mm:ssa') + '</td>';
+					jsontablehtml += '<td>' + obj.client_id + '</td>';
+					jsontablehtml += '<td>' + obj.client_secret + '</td>'; 
+
+					jsontablehtml += '<td> <a href="/p-admin/oauth/'+genericdoctypename+'/' + obj._id + '/edit" class="async-admin-ajax-link">edit</a>';
+					jsontablehtml += ' | <a alt="delete" class=" ts-dialog-delete" data-href="/p-admin/oauth/'+genericdoctypeplurallink+'/' + obj._id + '/delete" data-deleted-redirect-href="/p-admin/oauth/'+genericdoctypeplurallink+'">delete</a>	</td>';
+					return jsontablehtml;
+				}
+			},
+			custom_tfoot: locals.default_custom_tfoot({
+				total:clients.length,
+				count:clientscount,
+				pages:clientpages,
+				currentlimit:request.query.limit,
+				currentpage:request.query.pagenum,
+			})
+		}) %>
+		<input type="hidden" name="_csrf" value=<%- locals.token %> >
+  </div>
+</div>
+<% include ../shared/_new_taxonomy_modal %>
+<% include ../shared/footer %>

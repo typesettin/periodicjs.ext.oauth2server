@@ -11,7 +11,9 @@
   },
   "description": "OAuth 2 Server for periodic",
   "dependencies": {
-    "oauth2orize": "^1.2.2"
+    "oauth2orize": "^1.2.2",
+    "passport-http": "^0.3.0",
+    "passport-http-bearer": "^1.0.1"
   },
   "devDependencies": {
     "chai": "^3.0.0",
