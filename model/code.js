@@ -25,10 +25,7 @@ var CodeSchema = new Schema({
 		'default': 'user'
 	},
   redirect_uri: { type: String, required: true },
-  client_id: {
-		type: ObjectId,
-		ref: 'Client'
-	}
+  client_id: String
 });
 
 // CodeSchema.pre('save', function (next) {

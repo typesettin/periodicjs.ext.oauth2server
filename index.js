@@ -3,6 +3,14 @@ var	ControllerSettings = require('./model/controller_settings.js');
 var	clientSchema = require('./model/client.js');
 var	codeSchema = require('./model/code.js');
 var	tokenSchema = require('./model/token.js');
+var fs = require('fs-extra');
+var extend = require('utils-merge');
+var path = require('path');
+var oauth2serverExtSettings;
+var appenvironment;
+var settingJSON;
+var oauth2serverExtSettingsFile = path.join(__dirname, '../../content/config/extensions/periodicjs.ext.oauth2server/settings.json');
+var	defaultExtSettings = require('./controller/default_config');
 /**
  * An asset upload manager that uses pkgcloud to upload to the various cloud service providers (amazon s3, rackspace cloud files
  * @{@link https://github.com/typesettin/periodicjs.ext.clouduploads}
@@ -19,9 +27,16 @@ module.exports = function (periodic) {
 	var Code = periodic.mongoose.model('Code', codeSchema);
 	var Token = periodic.mongoose.model('Token', tokenSchema);
 
+	appenvironment = periodic.settings.application.environment;
+	settingJSON = fs.readJsonSync(oauth2serverExtSettingsFile,{throws:false});
+	//console.log('before settingJSON[appenvironment]', settingJSON[appenvironment]);
+	oauth2serverExtSettings = (settingJSON && settingJSON[appenvironment]) ? extend(defaultExtSettings, settingJSON[appenvironment]) : defaultExtSettings;
+
+
 	periodic.app.controller.extension.oauth2server = {
 		client:periodic.core.controller.controller_routes(ControllerSettings.client)
 	};
+	periodic.app.controller.extension.oauth2server.settings = oauth2serverExtSettings;
 	periodic.app.controller.extension.oauth2server.auth = require('./controller/auth.js')(periodic);
 	periodic.app.controller.extension.oauth2server.server = require('./controller/oauth2.js')(periodic);
 	var clientRouter = periodic.express.Router();
@@ -46,6 +61,8 @@ module.exports = function (periodic) {
 		clientController.show);
 	clientRouter.post('/new',oauth2authController.set_client_data,clientController.create);
 
+	apiRouter.get('/jwt/token',oauth2authController.get_jwt_token);
+
 	// Create endpoint handlers for oauth2 authorize
 	apiRouter.route('/oauth2/authorize')
 	  .get(authController.ensureAuthenticated,
@@ -55,11 +72,14 @@ module.exports = function (periodic) {
 	  .post(authController.ensureAuthenticated,
 	  	oauth2serverController.decision);
 
-	 apiRouter.get('/oauth2/profile',oauth2authController.isBearerAuthenticated, oauth2authController.get_user_profile);
+	 apiRouter.get('/oauth2/profile',oauth2authController.ensureApiAuthenticated, oauth2authController.get_user_profile);
 
 	// Create endpoint handlers for oauth2 token
 	apiRouter.route('/oauth2/token')
 	  .post(oauth2authController.isClientAuthenticated, oauth2serverController.token);
+
+	//get jwt auth token
+	apiRouter.get('/jwt/profile',oauth2authController.isJWTAuthenticated, oauth2authController.get_user_profile);
 
 	// Register all our routes with /api
 	periodic.app.use('/api', apiRouter);

@@ -136,7 +136,7 @@ var configureOAUTH2 = function(){
 	// This endpoint, initializes a new authorization transaction. It finds the client requesting access to the user’s account and then renders the dialog ejs view we created eariler.
 	authorization = [
 	  server.authorization(function(clientId, redirectUri, callback) {
-	  	console.log('looking up client',clientId, redirectUri);
+	  	// console.log('looking up client',clientId, redirectUri);
 	    Client.findOne({ client_id: clientId }, function (err, client) {
 	      if (err) { return callback(err); }
 

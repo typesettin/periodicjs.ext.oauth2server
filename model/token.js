@@ -24,10 +24,8 @@ var TokenSchema = new Schema({
 		type: String,
 		'default': 'user'
 	},
-  client_id: {
-		type: ObjectId,
-		ref: 'Client'
-	}
+	expires: Date,
+  client_id: String
 });
 
 // TokenSchema.pre('save', function (next) {
