@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <title>JSDoc: Source: index.js</title>
-    
+
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
     <!--[if lt IE 9]>
@@ -16,18 +16,29 @@
 <body>
 
 <div id="main">
-    
+
     <h1 class="page-title">Source: index.js</h1>
+
     
-    
+
 
 
     
     <section>
         <article>
-            <pre class="prettyprint source"><code>'use strict';
+            <pre class="prettyprint source linenums"><code>'use strict';
+var	ControllerSettings = require('./model/controller_settings.js');
+var	clientSchema = require('./model/client.js');
+var	codeSchema = require('./model/code.js');
+var	tokenSchema = require('./model/token.js');
+var fs = require('fs-extra');
+var extend = require('utils-merge');
 var path = require('path');
-
+var oauth2serverExtSettings;
+var appenvironment;
+var settingJSON;
+var oauth2serverExtSettingsFile = path.join(__dirname, '../../content/config/extensions/periodicjs.ext.oauth2server/settings.json');
+var	defaultExtSettings = require('./controller/default_config');
 /**
  * An asset upload manager that uses pkgcloud to upload to the various cloud service providers (amazon s3, rackspace cloud files
  * @{@link https://github.com/typesettin/periodicjs.ext.clouduploads}
@@ -39,20 +50,71 @@ var path = require('path');
  * @param  {object} periodic variable injection of resources from current periodic instance
  */
 module.exports = function (periodic) {
+	//register mongo models
+	var Client = periodic.mongoose.model('Client', clientSchema);
+	var Code = periodic.mongoose.model('Code', codeSchema);
+	var Token = periodic.mongoose.model('Token', tokenSchema);
+
+	appenvironment = periodic.settings.application.environment;
+	settingJSON = fs.readJsonSync(oauth2serverExtSettingsFile,{throws:false});
+	//console.log('before settingJSON[appenvironment]', settingJSON[appenvironment]);
+	oauth2serverExtSettings = (settingJSON &amp;&amp; settingJSON[appenvironment]) ? extend(defaultExtSettings, settingJSON[appenvironment]) : defaultExtSettings;
+
+
+	periodic.app.controller.extension.oauth2server = {
+		client:periodic.core.controller.controller_routes(ControllerSettings.client)
+	};
+	periodic.app.controller.extension.oauth2server.settings = oauth2serverExtSettings;
+	periodic.app.controller.extension.oauth2server.auth = require('./controller/auth.js')(periodic);
+	periodic.app.controller.extension.oauth2server.server = require('./controller/oauth2.js')(periodic);
+	var clientRouter = periodic.express.Router();
+	var apiRouter = periodic.express.Router();
+	var clientController = periodic.app.controller.extension.oauth2server.client;
+	var oauth2authController = periodic.app.controller.extension.oauth2server.auth;
+	var oauth2serverController = periodic.app.controller.extension.oauth2server.server;
+	var authController = periodic.app.controller.extension.login.auth;
+	var uacController = periodic.app.controller.extension.user_access_control.uac;
+	var userroleController = periodic.app.controller.native.userrole;
+
 	// express,app,logger,config,db,mongoose
-	var clouduploadController = require('./controller/cloudupload')(periodic),
-		mediaassetController = require(path.resolve(process.cwd(), './app/controller/asset'))(periodic),
-		mediaRouter = periodic.express.Router();
+	// 		assetController = periodic.app.controller.native.asset,
 
-	/**
-	 * admin/media manager routes
-	 */
-	mediaRouter.post('/new', clouduploadController.upload, mediaassetController.createassetfile);
-	mediaRouter.post('/:id/delete', mediaassetController.loadAsset, clouduploadController.remove);
+	clientRouter.get('/', 
+		clientController.loadClientsWithDefaultLimit, 
+		clientController.loadClientsWithCount, 
+		clientController.loadClients, 
+		clientController.index);
+	clientRouter.get('/:id', 
+		clientController.loadClient, 
+		clientController.show);
+	clientRouter.post('/new',oauth2authController.set_client_data,clientController.create);
 
-	periodic.app.use('/mediaasset', mediaRouter);
-};
-</code></pre>
+	apiRouter.get('/jwt/token',oauth2authController.get_jwt_token);
+
+	// Create endpoint handlers for oauth2 authorize
+	apiRouter.route('/oauth2/authorize')
+	  .get(authController.ensureAuthenticated,
+	  	uacController.loadUserRoles, 
+	  	uacController.check_user_access, 
+	  	oauth2serverController.authorization)
+	  .post(authController.ensureAuthenticated,
+	  	oauth2serverController.decision);
+
+	 apiRouter.get('/oauth2/profile',oauth2authController.ensureApiAuthenticated, oauth2authController.get_user_profile);
+
+	// Create endpoint handlers for oauth2 token
+	apiRouter.route('/oauth2/token')
+	  .post(oauth2authController.isClientAuthenticated, oauth2serverController.token);
+
+	//get jwt auth token
+	apiRouter.get('/jwt/profile',oauth2authController.isJWTAuthenticated, oauth2authController.get_user_profile);
+
+	// Register all our routes with /api
+	periodic.app.use('/api', apiRouter);
+
+	periodic.app.use('/' + periodic.app.locals.adminPath + '/oauth/client', clientRouter);
+	return periodic;
+};</code></pre>
         </article>
     </section>
 
@@ -62,13 +124,13 @@ module.exports = function (periodic) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-clouduploadController.html">clouduploadController</a></li><li><a href="clouduploads.html">clouduploads</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-oauth2serverController.html">oauth2serverController</a></li><li><a href="periodicjs.ext.module_clouduploads.html">clouduploads</a></li></ul><h3>Global</h3><ul><li><a href="global.html#checkApiAuthentication">checkApiAuthentication</a></li><li><a href="global.html#configureOAUTH2">configureOAUTH2</a></li><li><a href="global.html#configurePassport">configurePassport</a></li><li><a href="global.html#get_jwt_token">get_jwt_token</a></li><li><a href="global.html#get_user_profile">get_user_profile</a></li><li><a href="global.html#getRandomInt">getRandomInt</a></li><li><a href="global.html#isJWTAuthenticated">isJWTAuthenticated</a></li><li><a href="global.html#limitLoginAttempts">limitLoginAttempts</a></li><li><a href="global.html#loginAttemptsError">loginAttemptsError</a></li><li><a href="global.html#set_client_data">set_client_data</a></li><li><a href="global.html#uid">uid</a></li></ul>
 </nav>
 
-<br clear="both">
+<br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Sun Oct 12 2014 20:20:05 GMT-0400 (EDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Feb 23 2016 15:37:04 GMT-0500 (EST)
 </footer>
 
 <script> prettyPrint(); </script>

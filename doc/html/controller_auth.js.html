@@ -1,4 +1,32 @@
-'use strict';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: controller/auth.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: controller/auth.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict';
 
 var path = require('path'),
 	capitalize = require('capitalize'),
@@ -201,7 +229,7 @@ var get_jwt_token = function(req,res){
 		      	}
 						if (isMatch) {	
 							//clear login attempt blocks
-							if (user.extensionattributes && user.extensionattributes.login && user.extensionattributes.login.attempts) {
+							if (user.extensionattributes &amp;&amp; user.extensionattributes.login &amp;&amp; user.extensionattributes.login.attempts) {
 								user.extensionattributes.login.attempts = 0;
 								user.markModified('extensionattributes');
 								user.save();
@@ -231,7 +259,7 @@ var get_jwt_token = function(req,res){
 							logger.error('Error updating user', err);
 							reject(err);
 						}
-						else if (loginExtSettings.timeout.use_limiter && updated.extensionattributes.login.flagged) {
+						else if (loginExtSettings.timeout.use_limiter &amp;&amp; updated.extensionattributes.login.flagged) {
 								loginAttemptsError(updated, function(err){
 									reject(err);
 								});
@@ -294,8 +322,8 @@ var loginAttemptsError = function (user, done) {
 			var coreMailerOptions = {
 				appenvironment: 'development',
 				to: user.email,
-				replyTo: 'Promise Financial [Do Not Reply] <no-reply@promisefin.com>',
-				from: 'Promise Financial [Do Not Reply] <no-reply@promisefin.com>',
+				replyTo: 'Promise Financial [Do Not Reply] &lt;no-reply@promisefin.com>',
+				from: 'Promise Financial [Do Not Reply] &lt;no-reply@promisefin.com>',
 				subject: loginExtSettings.timeout.lockout_email_subject,
 				emailtemplatefilepath: templatepath,
 				emailtemplatedata: {
@@ -349,7 +377,7 @@ var limitLoginAttempts = function (user) {
 			user.extensionattributes.login.attempts = 1;
 			user.extensionattributes.login.timestamp = moment();
 		}
-		else if (user.extensionattributes.login.attempts >= loginExtSettings.timeout.attempts && moment(user.extensionattributes.login.timestamp).isAfter(moment().subtract(loginExtSettings.timeout.attempt_interval.time, loginExtSettings.timeout.attempt_interval.unit))) {
+		else if (user.extensionattributes.login.attempts >= loginExtSettings.timeout.attempts &amp;&amp; moment(user.extensionattributes.login.timestamp).isAfter(moment().subtract(loginExtSettings.timeout.attempt_interval.time, loginExtSettings.timeout.attempt_interval.unit))) {
 			user.extensionattributes.login.flagged = true;
 			user.extensionattributes.login.freezeTime = moment();
 		}
@@ -385,14 +413,14 @@ var isJWTAuthenticated = function(req, res, next){
 	 *  - the x-access-token header
 	 *    ...in that order.
 	 */
-	var token = (req.body && req.body.access_token) || req.query.access_token || req.headers['x-access-token'];
+	var token = (req.body &amp;&amp; req.body.access_token) || req.query.access_token || req.headers['x-access-token'];
 	// console.log('token',token);
 	if (token) {
 
 		try {
 			var decoded = jwt.decode(token, jwtTokenSecret);
 
-			if (decoded.exp <= Date.now()) {
+			if (decoded.exp &lt;= Date.now()) {
 				res.status(400).send('Access token has expired', 400);				
 			}
 			else{
@@ -474,3 +502,26 @@ var controller = function (resources) {
 };
 
 module.exports = controller;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-oauth2serverController.html">oauth2serverController</a></li><li><a href="periodicjs.ext.module_clouduploads.html">clouduploads</a></li></ul><h3>Global</h3><ul><li><a href="global.html#checkApiAuthentication">checkApiAuthentication</a></li><li><a href="global.html#configureOAUTH2">configureOAUTH2</a></li><li><a href="global.html#configurePassport">configurePassport</a></li><li><a href="global.html#get_jwt_token">get_jwt_token</a></li><li><a href="global.html#get_user_profile">get_user_profile</a></li><li><a href="global.html#getRandomInt">getRandomInt</a></li><li><a href="global.html#isJWTAuthenticated">isJWTAuthenticated</a></li><li><a href="global.html#limitLoginAttempts">limitLoginAttempts</a></li><li><a href="global.html#loginAttemptsError">loginAttemptsError</a></li><li><a href="global.html#set_client_data">set_client_data</a></li><li><a href="global.html#uid">uid</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Feb 23 2016 15:37:04 GMT-0500 (EST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

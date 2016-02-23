@@ -45,7 +45,7 @@ With either request headers or a request body containing:
  * password
  * entitytype (optional if using a different user account model)
 
-You'll then recieve a JWT access_token to make API requests w
+You'll then recieve a JWT access_token to make API requests with in either the request body or `x-access-token` header
 
 ### Step 4: Make authenticated Requests
 
