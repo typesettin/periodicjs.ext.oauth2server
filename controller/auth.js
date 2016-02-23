@@ -324,7 +324,7 @@ var isJWTAuthenticated = function(req, res, next){
 	 *    ...in that order.
 	 */
 	var token = (req.body && req.body.access_token) || req.query.access_token || req.headers['x-access-token'];
-	console.log('token',token);
+	// console.log('token',token);
 	if (token) {
 
 		try {
