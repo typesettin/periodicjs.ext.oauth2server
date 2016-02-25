@@ -1,9 +1,9 @@
 'use strict';
 
-var path = require('path'),
-	capitalize = require('capitalize'),
+var capitalize = require('capitalize'),
+// path = require('path'),
 	moment = require('moment'),
-	async = require('async'),
+	// async = require('async'),
 	CoreExtension,
 	CoreUtilities,
 	CoreMailer,
@@ -11,7 +11,9 @@ var path = require('path'),
 	appSettings,
 	appenvironment,
 	logger,
-	jwtTokenSecret,
+	// jwtTokenSecret,
+	loginAttemptsError,
+	limitLoginAttempts,
 	loginExtSettings,
 	oauth2serverExtSettings,
 	passport,
@@ -35,6 +37,7 @@ var configurePassport = function(){
 	 */
 	passport.use('client-basic', new BasicStrategy(
 	  function(username, password, callback) {
+	  	// console.log('in client basic strategy username, password',username, password)
 	    Client.findOne({ client_id: username }, function (err, client) {
 	      if (err) { 
 	      	return callback(err); 
@@ -157,6 +160,8 @@ var get_jwt_token = function(req,res){
 			var token = new Token({
 	      client_id: client.client_id,
 	      user_id: user._id,
+	      user_username: user._username,
+	      user_email: user._email,
 	      expires: new Date(expires),
 	      user_entity_type: user.entitytype,
 	      value: jwt_token,
@@ -210,7 +215,7 @@ var get_jwt_token = function(req,res){
 						} 
 						else {						
 							// The password is wrong...
-							reject('Invalid Login Authentication')
+							reject('Invalid Login Authentication');
 						}
 					});
 	  		};
@@ -266,7 +271,7 @@ var get_jwt_token = function(req,res){
   		return saveToken(user,clientApp);
 		})
 		.then(function(savedToken){
-			// console.log('savedToken',savedToken)
+			console.log('savedToken',savedToken);
 			res.json({
 				token : savedToken.jwt_token,
 				expires : savedToken.expires,
@@ -279,91 +284,6 @@ var get_jwt_token = function(req,res){
 			logger.error(err);
 			res.status(401).send(errortosend);
 		});
-};
-
-/**
- * send error if user is locked out
- * @param  {object}   user user from db
- * @param  {function} done callback function
- * @return {function}        callback function
- */
-var loginAttemptsError = function (user, done) {
-	var templatepath = path.resolve(process.cwd(), loginExtSettings.timeout.view_path_relative_to_periodic);
-	async.waterfall([
-		function (cb) {
-			var coreMailerOptions = {
-				appenvironment: 'development',
-				to: user.email,
-				replyTo: 'Promise Financial [Do Not Reply] <no-reply@promisefin.com>',
-				from: 'Promise Financial [Do Not Reply] <no-reply@promisefin.com>',
-				subject: loginExtSettings.timeout.lockout_email_subject,
-				emailtemplatefilepath: templatepath,
-				emailtemplatedata: {
-					data: user
-				}
-			};
-			if (loginExtSettings.settings.adminbccemail || appSettings.adminbccemail) {
-				coreMailerOptions.bcc = loginExtSettings.settings.adminbccemail || appSettings.adminbccemail;
-			}
-			CoreMailer.sendEmail(coreMailerOptions, function (err, status) {
-				if (err) {
-					cb(err, null);
-				}
-				else {
-					cb(null, status);
-				}
-			});
-		}
-	], function (err, result) {
-		if (err) {
-			logger.error('Error sending email', err);
-			return done(err);
-		}
-		else {
-			logger.verbose('Sending account lockout email', result);
-			return done(new Error('Your Account is Currently Blocked'), false, {
-				message: 'Your Account is Currently Blocked'
-			});
-		}
-	});
-};
-
-/**
- * update user to mark login attempts
- * @param  {object} user user from db
- * @return {object}      updated user
- */
-var limitLoginAttempts = function (user) {
-	user.extensionattributes = user.extensionattributes || {};
-	if (!user.extensionattributes.login) {
-		user.extensionattributes.login = {
-			attempts: 0,
-			timestamp: moment(),
-			flagged: false,
-			freezeTime: moment()
-		};
-	}
-	user.extensionattributes.login.attempts++;
-	if (!user.extensionattributes.login.flagged) {
-		if (moment(user.extensionattributes.login.timestamp).isBefore(moment().subtract(loginExtSettings.timeout.attempt_interval.time, loginExtSettings.timeout.attempt_interval.unit))) {
-			user.extensionattributes.login.attempts = 1;
-			user.extensionattributes.login.timestamp = moment();
-		}
-		else if (user.extensionattributes.login.attempts >= loginExtSettings.timeout.attempts && moment(user.extensionattributes.login.timestamp).isAfter(moment().subtract(loginExtSettings.timeout.attempt_interval.time, loginExtSettings.timeout.attempt_interval.unit))) {
-			user.extensionattributes.login.flagged = true;
-			user.extensionattributes.login.freezeTime = moment();
-		}
-	}
-	else {
-		if (moment(user.extensionattributes.login.freezeTime).isBefore(moment().subtract(loginExtSettings.timeout.freeze_interval.time, loginExtSettings.timeout.freeze_interval.unit))) {
-			user.extensionattributes.login.attempts = 1;
-			user.extensionattributes.login.timestamp = moment();
-			user.extensionattributes.login.flagged = false;
-			user.extensionattributes.login.freezeTime = moment();
-		}
-	}
-	user.markModified('extensionattributes');
-	return user;
 };
 
 
@@ -399,10 +319,10 @@ var isJWTAuthenticated = function(req, res, next){
 				UserModelToQuery = mongoose.model(capitalize(decoded.ent));
 				UserModelToQuery.findOne({ '_id': decoded.iss }, function(err, user){
 					if (!err) {					
-						req.user = user									
+						req.user = user;								
 						return next();
 					}
-				})
+				});
 			}
 		} 
 		catch (err) {			
@@ -412,7 +332,7 @@ var isJWTAuthenticated = function(req, res, next){
 	else {
 		next();
 	}
-}
+};
 
 /**
  * express middleware for ensuring either HTTP Bearer or JWT access token
@@ -460,17 +380,32 @@ var controller = function (resources) {
 	appenvironment = resources.settings.application.environment;
 	oauth2serverExtSettings = resources.app.controller.extension.oauth2server.settings;
 	loginExtSettings = resources.app.controller.extension.login.auth.loginExtSettings;
+	var passportController = resources.app.controller.extension.login.auth.passportController;
+	passport = passportController.passport;
+	loginAttemptsError = passportController.loginAttemptsError;
+	limitLoginAttempts = passportController.limitLoginAttempts;
+	
 	configurePassport();
 	return {
 		set_client_data : set_client_data,
-		isClientAuthenticated : passport.authenticate('client-basic', { session : false }),
+		isClientAuthenticated : [function(req,res,next){
+			if(!req.headers.authorization && req.body && req.body.client_id && req.body.client_secret){
+				let username = req.body.client_id;
+				let password = req.body.client_secret;
+				    req.headers.authorization = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
+
+			}
+			console.log('req.body',req.body);
+			console.log('req.headers',req.headers);
+			next();
+		},passport.authenticate('client-basic', { session : false })],
 		isBearerAuthenticated : passport.authenticate('bearer', { session: false }),
 		ensureApiAuthenticated :checkApiAuthentication,
 		isJWTAuthenticated: isJWTAuthenticated,
 		isAuthenticated : passport.authenticate([ 'bearer'], { session: false }),
 		get_user_profile: get_user_profile,
 		get_jwt_token: get_jwt_token
-	}
+	};
 };
 
 module.exports = controller;

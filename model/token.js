@@ -20,6 +20,8 @@ var TokenSchema = new Schema({
 		type: ObjectId,
 		ref: 'User'
 	},
+	user_username: String,
+	user_email: String,
 	user_entity_type: {
 		type: String,
 		'default': 'user'

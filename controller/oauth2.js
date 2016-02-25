@@ -96,6 +96,8 @@ var configureOAUTH2 = function(){
 	    client_id: client._id,
 	    redirect_uri: redirectUri,
 	    user_id: user._id,
+	    user_username: user.username,
+	    user_email: user.email,
       user_entity_type: user.entitytype
 	  });
 
@@ -134,14 +136,18 @@ var configureOAUTH2 = function(){
 			        value: uid(256),
 			        client_id: authCode.client_id,
 			        user_id: authCode.user_id,
+					    user_username: authCode.user_username,
+					    user_email: authCode.user_email,
 			        user_entity_type: authCode.user_entity_type
 			      });
 
 			      // Save the access token and check for errors
 			      token.save(function (err) {
+			      	console.log('callback',callback);
 			        if (err) { return callback(err); }
-
-			        callback(null, token);
+			        else{
+				        return callback(null, token);
+			        }
 			      });
 		      }
 		    });
