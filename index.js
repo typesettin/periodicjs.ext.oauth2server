@@ -76,9 +76,7 @@ module.exports = function (periodic) {
 
 	// Create endpoint handlers for oauth2 token
 	apiRouter.route('/oauth2/token')
-	  .post(oauth2authController.isClientAuthenticated, oauth2serverController.token,function(req,res){
-	  	console.log('got to after token')
-	  });
+	  .post(oauth2authController.isClientAuthenticated, oauth2serverController.token);
 
 	//get jwt auth token
 	apiRouter.get('/jwt/profile',oauth2authController.isJWTAuthenticated, oauth2authController.get_user_profile);

@@ -143,7 +143,7 @@ var configureOAUTH2 = function(){
 
 			      // Save the access token and check for errors
 			      token.save(function (err) {
-			      	console.log('callback',callback);
+			      	// console.log('callback',callback);
 			        if (err) { return callback(err); }
 			        else{
 				        return callback(null, token);

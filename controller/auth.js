@@ -271,7 +271,7 @@ var get_jwt_token = function(req,res){
   		return saveToken(user,clientApp);
 		})
 		.then(function(savedToken){
-			console.log('savedToken',savedToken);
+			// console.log('savedToken',savedToken);
 			res.json({
 				token : savedToken.jwt_token,
 				expires : savedToken.expires,
@@ -389,14 +389,22 @@ var controller = function (resources) {
 	return {
 		set_client_data : set_client_data,
 		isClientAuthenticated : [function(req,res,next){
+			var username;
+			var password;
 			if(!req.headers.authorization && req.body && req.body.client_id && req.body.client_secret){
-				let username = req.body.client_id;
-				let password = req.body.client_secret;
-				    req.headers.authorization = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
+				username = req.body.client_id;
+				password = req.body.client_secret;
+		    req.headers.authorization = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
 
 			}
-			console.log('req.body',req.body);
-			console.log('req.headers',req.headers);
+			else if(!req.headers.authorization && req.query && req.query.client_id && req.query.client_secret){
+				username = req.query.client_id;
+				password = req.query.client_secret;
+		    req.headers.authorization = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
+
+			}
+			// console.log('req.body',req.body);
+			// console.log('req.headers',req.headers);
 			next();
 		},passport.authenticate('client-basic', { session : false })],
 		isBearerAuthenticated : passport.authenticate('bearer', { session: false }),
