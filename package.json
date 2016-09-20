@@ -1,6 +1,6 @@
 {
   "name": "periodicjs.ext.oauth2server",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "license": "MIT",
   "author": {
     "email": "yaw.etse@gmail.com",
@@ -12,6 +12,7 @@
   },
   "description": "OAuth 2 Server for periodic",
   "dependencies": {
+    "express-rate-limit": "^2.5.0",
     "jwt-simple": "^0.4.1",
     "oauth2orize": "^1.2.2",
     "passport-http": "^0.3.0",
