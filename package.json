@@ -1,6 +1,6 @@
 {
   "name": "periodicjs.ext.oauth2server",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "license": "MIT",
   "author": {
     "email": "yaw.etse@gmail.com",
@@ -58,6 +58,12 @@
     {
       "email": "yaw.etse@gmail.com",
       "name": "yawetse"
+    }
+  ],
+  "contributors": [
+    {
+      "email": "markewaldron@gmail.com",
+      "name": "markwaldron"
     }
   ],
   "optionalDependencies": {},
