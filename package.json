@@ -15,7 +15,9 @@
     "jwt-simple": "^0.4.1",
     "oauth2orize": "^1.2.2",
     "passport-http": "^0.3.0",
-    "passport-http-bearer": "^1.0.1"
+    "passport-http-bearer": "^1.0.1",
+    "rate-limit-redis": "^1.0.4",
+    "redis": "^2.6.2"
   },
   "devDependencies": {
     "chai": "^3.0.0",
