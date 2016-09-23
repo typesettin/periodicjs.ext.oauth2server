@@ -62,6 +62,7 @@ module.exports = function (periodic) {
   clientRouter.post('/new', oauth2authController.set_client_data, clientController.create);
   
   apiRouter.get('/jwt/token', oauth2authController.get_jwt_token);
+  apiRouter.post('/jwt/token', oauth2authController.get_jwt_token);
 
   // Create endpoint handlers for oauth2 authorize
   apiRouter.route('/oauth2/authorize')
@@ -82,6 +83,7 @@ module.exports = function (periodic) {
 
   //get jwt auth token
   apiRouter.get('/jwt/profile', oauth2authController.isJWTAuthenticated, oauth2authController.get_user_profile);
+  apiRouter.post('/jwt/profile', oauth2authController.isJWTAuthenticated, oauth2authController.get_user_profile);
 
   // Register all our routes with /api
   periodic.app.use('/api', apiRouter);

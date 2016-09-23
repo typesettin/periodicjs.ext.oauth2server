@@ -117,7 +117,8 @@ var get_user_profile = function(req, res){
      updatedat:req.user.updatedat,
      createdat:req.user.createdat,
      entitytype:req.user.entitytype,
-     username:req.user.username,
+     username: req.user.username,
+     user:req.user,
    });
 };
 
@@ -322,7 +323,7 @@ var isJWTAuthenticated = function(req, res, next){
       }
       else{
         UserModelToQuery = mongoose.model(capitalize(decoded.ent));
-        UserModelToQuery.findOne({ '_id': decoded.iss }, function(err, user){
+        UserModelToQuery.findOne({ '_id': decoded.iss }).select({changes:0,password:0}).populate('primaryasset').exec(function(err, user){
           if (!err) {					
             req.user = user;								
             return next();
