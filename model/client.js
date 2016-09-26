@@ -51,11 +51,25 @@ var clientSchema = new Schema({
   rate_limit: {
     max: {
       type: Number,
-      default: 0
+      default: -1
     },
     delayMs: {
       type: Number,
       default: 0
+    }
+  },
+  api_settings: {
+    responseType: {
+      type: String,
+      default: 'application/json'
+    },
+    acknowledgementType: {
+      type: String,
+      default: null
+    },
+    sendAcknowledgement: {
+      type: Boolean,
+      default: false
     }
   }
 });
