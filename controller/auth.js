@@ -21,6 +21,7 @@ var capitalize = require('capitalize'),
   Client,
   User,
   user_based_rate_limits,
+  mongo_clients,
   Token;
 var jwt = require('jwt-simple');
 var BasicStrategy = require('passport-http').BasicStrategy;
@@ -28,6 +29,7 @@ var BearerStrategy = require('passport-http-bearer').Strategy;
 var RateLimit = require('express-rate-limit');
 var RedisStore = require('rate-limit-redis');
 var redis = require('redis');
+var Netmask = require('netmask').Netmask;
 
 /**
  * Add two more strategies to passport for client-basic authentication, this allows you to use HTTP Basic Auth with your client token id and client secret to obtain an authorization code
@@ -340,6 +342,14 @@ var isJWTAuthenticated = function(req, res, next){
   }
 };
 
+var set_redis_client = function (client) {
+  if (client.ip_addresses) {
+    let ips = get_all_ips_for_client(client.ip_addresses).join(',');
+    redisClient.set(client.client_id, ips);
+    redisClient.expire(client.client_id, 3600);      
+  }
+};
+
 
 /**
  * quieries mongo for clients and users - stores with ID as key and rate limits as value
@@ -347,17 +357,26 @@ var isJWTAuthenticated = function(req, res, next){
 var get_custom_rate_limits = function () {
   let allClientLimits = {};
   let allUserLimits = {};
+  let clients_from_mongo = {};
   Client.find({}, (err, clients) => {
-    clients.map(client => {
-      let client_from_mongo = (client.toJSON)? client.toJSON(): client;
-      let clientId = client_from_mongo.client_id.toString();
-      allClientLimits[clientId] = client.rate_limit
-    })
+    if (err) {
+      console.log('err: ', err);
+      return err
+    } else {
+      clients.map(client => {
+        let client_from_mongo = (client.toJSON) ? client.toJSON() : client;
+        let clientId = client_from_mongo.client_id.toString();
+        allClientLimits[clientId] = client.rate_limit;
+        set_redis_client(client);
+        clients_from_mongo[clientId] = client;
+      })
+    }
   });
   user_based_rate_limits = {
     clients: allClientLimits,
     users: allUserLimits
   };
+  mongo_clients = clients_from_mongo;
 };
 
 var client_id_auth_header_map = {};
@@ -372,6 +391,58 @@ var get_client_id_from_authorization_header = function (authHeader) {
   }
   return client_id_auth_header_map[authHeader];
 }
+
+var get_ips_for_ip = function (ip) {
+  let block = new Netmask(ip);
+  let all_ips = [];
+  block.forEach(ip => {
+    all_ips = all_ips.concat(ip);
+  });
+  return all_ips;
+};
+
+var get_all_ips_for_client = function (ip_addresses) {
+  let ips = [];
+  ip_addresses.forEach(item => {
+    ips = ips.concat(get_ips_for_ip(item));
+  })
+  return ips;
+};
+
+var get_ips_from_redis = function (client_id) {
+  return new Promise((resolve, reject) => {
+    redisClient.get(client_id, (err, reply) => {
+      if (reply) {
+        return resolve(reply)
+      } else {
+        Client.findOne({ client_id: client_id }, (err, client) => {
+          if (err) {
+            return resolve([])
+          } else if (!client || !client.ip_addresses) {
+            return resolve([]);
+          } else {
+            set_redis_client(client);
+            return resolve(client.ip_addresses);
+          }
+        })
+      }
+    }) 
+  })
+};
+
+var verify_client_ip = function (req, res, next) {
+  let client_id = req.headers.client_id = get_client_id_from_authorization_header(req.headers.authorization);
+  get_ips_from_redis(client_id)
+  .then(ip_addresses => {
+    let client_ips = (typeof ip_addresses === 'string') ? ip_addresses.split(',') : ip_addresses;
+    let request_ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    if (request_ip === '::ffff:127.0.0.1' || client_ips.includes(request_ip)) {
+      next();
+    } else {
+      res.send(401);
+    }
+  })
+};
 
 /**
  * returns rate limiter middleware with configured settings based on client, or default settings if headers have no client_id
@@ -480,9 +551,10 @@ var controller = function (resources) {
   configurePassport();
   get_custom_rate_limits();
   return {
-    set_client_data : set_client_data,
+    set_client_data: set_client_data,
     isClientAuthenticated: [
       limit_api_requests,
+      verify_client_ip,
       function (req, res, next) {
       var username;
       var password;

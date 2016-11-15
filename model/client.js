@@ -45,8 +45,8 @@ var clientSchema = new Schema({
     }
   },
   ip_addresses: {
-    type: String,
-    default: null
+    type: Array,
+    default: []
   },
   rate_limit: {
     max: {

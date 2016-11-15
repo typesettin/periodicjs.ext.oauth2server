@@ -1,6 +1,6 @@
 {
   "name": "periodicjs.ext.oauth2server",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "license": "MIT",
   "author": {
     "email": "yaw.etse@gmail.com",
@@ -14,6 +14,7 @@
   "dependencies": {
     "express-rate-limit": "^2.5.0",
     "jwt-simple": "^0.4.1",
+    "netmask": "^1.0.6",
     "oauth2orize": "^1.2.2",
     "passport-http": "^0.3.0",
     "passport-http-bearer": "^1.0.1",
@@ -64,7 +65,8 @@
   "contributors": [
     {
       "email": "markewaldron@gmail.com",
-      "name": "markwaldron"
+      "name": "Mark Waldron",
+      "url": "https://github.com/MarkWaldron"
     }
   ],
   "optionalDependencies": {},
