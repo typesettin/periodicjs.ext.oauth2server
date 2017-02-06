@@ -1,33 +1,35 @@
 'use strict';
+const capitalize = require('capitalize');
+const moment = moment = require('moment');
+const jwt = require('jwt-simple');
+const BasicStrategy = require('passport-http').BasicStrategy;
+const BearerStrategy = require('passport-http-bearer').Strategy;
+const RateLimit = require('express-rate-limit');
+const RedisStore = require('rate-limit-redis');
+const redis = require('redis');
+const Promisie = require('promisie');
 
-var capitalize = require('capitalize'),
-  moment = require('moment'),
-  CoreExtension,
-  CoreUtilities,
-  CoreMailer,
-  CoreController,
-  appSettings,
-  appenvironment,
-  logger,
-  loginAttemptsError,
-  limitLoginAttempts,
-  loginExtSettings,
-  oauth2serverExtSettings,
-  redis_config,
-  redisClient,
-  rateLimitStore,
-  passport,
-  mongoose,
-  Client,
-  User,
-  user_based_rate_limits,
-  Token;
-var jwt = require('jwt-simple');
-var BasicStrategy = require('passport-http').BasicStrategy;
-var BearerStrategy = require('passport-http-bearer').Strategy;
-var RateLimit = require('express-rate-limit');
-var RedisStore = require('rate-limit-redis');
-var redis = require('redis');
+var CoreExtension;
+var CoreUtilities;
+var CoreMailer;
+var CoreController;
+var appSettings;
+var appenvironment;
+var logger;
+var loginAttemptsError;
+var limitLoginAttempts;
+var loginExtSettings;
+var oauth2serverExtSettings;
+var redis_config;
+var redisClient;
+var rateLimitStore;
+var passport;
+var mongoose;
+var Client;
+var User;
+var user_based_rate_limits;
+var Token;
+var findOneClient;
 
 /**
  * Add two more strategies to passport for client-basic authentication, this allows you to use HTTP Basic Auth with your client token id and client secret to obtain an authorization code
@@ -123,175 +125,130 @@ var get_user_profile = function(req, res){
 };
 
 /**
+ * validates user password
+ * @return {object}        Promise for saving token
+ */
+var validateUserForUnauthenticatedRequest = function (options = {}) {
+  if (!options.user) return Promisie.reject(new Error('Invalid credentials'));
+  let comparePassword = function () {
+    return Promisie.promisify(options.user.comparePassword, options.user)(options.password)
+      .then(isMatch => {
+        if (isMatch) {
+          if (options.user.extensionattributes && options.user.extensionattributes.login && options.user.extensionattributes.login.attempts) {
+            options.user.extensionattributes.login.attempts = 0;
+            options.user.markModified('extensionattributes');
+            options.user.save();
+          }
+          return options;
+        }
+        return Promisie.reject(new Error('Invalid credentials'));
+      })
+      .catch(e => Promisie.reject(e));
+  };
+  if (loginExtSettings.timeout.use_limiter) {
+    let limitAttemptUser = limitLoginAttempts(options.user);
+    return Promisie.promisify(limitAttemptUser.save, limitAttemptUser)()
+      .then(result => {
+        if (result && result.extensionattributes && result.extensionattributes.login && result.extensionattributes.login.flagged) {
+          return Promisie.promisify(loginAttemptsError)(result);
+        }
+        return comparePassword();
+      })
+      .catch(e => Promisie.reject(e));
+  }
+  return comparePassword();
+};
+
+/**
+ * gets user from db
+ * @return {object}        Promise for finding db user
+ */
+var getUserForUnauthenticatedRequest = function (options = {}) {
+  if (!options.username || !options.password) return Promisie.reject(new Error('Authentication Error'));
+  return new Promisie((resolve, reject) => {
+    options.modelToQuery.findOne(options.userQuery, {
+      'primaryasset.changes':0,
+      'primaryasset.content':0,
+      'assets.changes':0,
+      '__v':0,
+      changes:0,
+      content:0
+    })
+      .populate('tags categories contenttypes assets primaryasset')
+      .exec((err, user) => {
+        if (err) reject(err);
+        else resolve(Object.assign(options, { user }));
+      });
+  });
+};
+
+/**
+ * saves generated expiring JWT token to user document in db
+ * @return {object}        Promise for saving token
+ */
+var saveTokenForAuthenticatedUser = function (options = {}) {
+  try {
+    let expires = moment().add(oauth2serverExtSettings.jwt.expire_duration, oauth2serverExtSettings.jwt.expire_period).valueOf();  
+    let jwtTokenSecret = (oauth2serverExtSettings.jwt.custom_secret) ? oauth2serverExtSettings.jwt.custom_secret : appSettings.session_secret;
+    let jwt_token = jwt.encode({
+      iss: options.user._id,
+      ent: options.user.entitytype,
+      exp: expires
+    }, jwtTokenSecret);
+    let token = new Token({
+      client_id: options.client.client_id,
+      user_id: options.user._id,
+      user_username: options.user.username,
+      user_email: options.user.email,
+      expires: new Date(expires),
+      user_entity_type: options.user.entitytype,
+      value: jwt_token
+    });
+    return Promisie.promisify(token.save, token)()
+      .then(() => Object.assign(options, { jwt_token, expires }))
+      .catch(e => Promisie.reject(e));
+  } catch (e) {
+    return Promisie.reject(e);
+  }
+};
+
+/**
  * authorization request to obtain a JWT access token (requires, username, password, clientid, entitytype (optional user entitytype))
  * @param {object}   req  express request object
  * @param {object}   res  express response object
  */
-var get_jwt_token = function(req,res){
-  var username = req.body.username || req.headers.username;
-  var clientId = req.body.clientid || req.headers.clientid;
-  var password = req.body.password || req.headers.password;
-  var userQuery = {
-      $or: [{
-        username: {
-          $regex: new RegExp(username, 'i')
-        }
-      }, {
-        email: {
-          $regex: new RegExp(username, 'i')
-        }
-      }]
-    };
-  var clientApp;
-  var entitytype = req.body.entitytype || req.headers.entitytype ||'user';
-  var UserModelToQuery = mongoose.model(capitalize(entitytype));
-  /**
-   * saves generated expiring JWT token to user document in db
-   * @param  {object} user   user from db
-   * @param  {object} client client from db
-   * @return {object}        Promise for saving token
-   */
-  var saveToken = function(user,client){
-    return new Promise(function(resolve,reject){
-      var expires = moment().add( oauth2serverExtSettings.jwt.expire_duration, oauth2serverExtSettings.jwt.expire_period).valueOf();	
-      var jwtTokenSecret = (oauth2serverExtSettings.jwt.custom_secret)? oauth2serverExtSettings.jwt.custom_secret : appSettings.session_secret;			
-      var jwt_token = jwt.encode(
-        {
-          iss: user._id,
-          ent: user.entitytype,
-          exp: expires
-        }, 
-        jwtTokenSecret
-      );	
-      var token = new Token({
-        client_id: client.client_id,
-        user_id: user._id,
-        user_username: user._username,
-        user_email: user._email,
-        expires: new Date(expires),
-        user_entity_type: user.entitytype,
-        value: jwt_token,
-      });
-
-      // Save the access token and check for errors
-      token.save(function (err) {
-
-        if (err) { reject(err); }
-        else{
-          resolve({jwt_token:jwt_token,expires:expires,user:user});
-        }
-
-      });
-    });
+var get_jwt_token = function (req, res) {
+  let username = req.body.username || req.headers.username;
+  let clientId = req.body.clientid || req.headers.clientid;
+  let password = req.body.password || req.headers.password;
+  let userQuery = {
+    $or: [{
+      username: new RegExp(username, 'i')
+    }, {
+      email: new RegExp(username, 'i')
+    }]
   };
-  /**
-   * gets user from db
-   * @param  {function} resolve       promise resolve callback
-   * @param  {function} reject) 			promise reject callback
-   * @return {object}        Promise for finding db user
-   */
-  var getUser = new Promise(function(resolve,reject){
-    if (!username || !password){
-      reject(new Error('Authentication error'));
-    }
-    else{
-      UserModelToQuery.findOne(userQuery).select({
-        'primaryasset.changes':0,
-        'primaryasset.content':0,
-        'assets.changes':0,
-        '__v':0,
-        'password':0,
-        changes:0,
-        content:0
-      }).populate('tags categories contenttypes assets primaryasset').exec(function(err, user) {
-        var validUserCallback = function(user){
-          user.comparePassword(password, function(err, isMatch) {
-            if (err) {	      		
-              // an error has occured checking the password. For simplicity, just return a 401
-              reject('Invalid Login Error');
-            }
-            if (isMatch) {	
-              //clear login attempt blocks
-              if (user.extensionattributes && user.extensionattributes.login && user.extensionattributes.login.attempts) {
-                user.extensionattributes.login.attempts = 0;
-                user.markModified('extensionattributes');
-                user.save();
-              }
-              resolve(user);
-            } 
-            else {						
-              // The password is wrong...
-              reject('Invalid Login Authentication');
-            }
-          });
-        };
-
-
-        if (err ) {		
-          // user cannot be found; may wish to log that fact here. For simplicity, just return a 401
-          reject( new Error('Authentication error'));
-        }
-        else if (!user) {		
-          // user cannot be found; may wish to log that fact here. For simplicity, just return a 401
-          reject( new Error('Invalid Credentials'));
-        }
-        else if (loginExtSettings.timeout.use_limiter) {
-          var limitAttemptUser = limitLoginAttempts(user);
-          limitAttemptUser.save(function (err, updated) {
-            if (err) {
-              logger.error('Error updating user', err);
-              reject(err);
-            }
-            else if (loginExtSettings.timeout.use_limiter && updated.extensionattributes.login.flagged) {
-                loginAttemptsError(updated, function(err){
-                  reject(err);
-                });
-            }
-            else {
-              resolve(updated);
-            }
-          });
-        }
-        else {
-          resolve(user);
-        }
-      });
-    }
-  });
-  Promise.resolve(Client.findOne({ client_id: clientId }))
-    .then(function(client){
-      clientApp = client;
-      if(!client){
-        throw new Error('Client not found');
-      }
-      else if(req.user){
-        return new Promise(function(resolve,reject){
-          resolve(req.user);
-        });
-      }
-      else{
-        return getUser;
-      }
-    })
-    .then(function(user){
-      return saveToken(user,clientApp);
-    })
-    .then(function(savedToken){
-      // console.log('savedToken',savedToken);
-      res.json({
-        token : savedToken.jwt_token,
-        expires : savedToken.expires,
-        timeout : new Date(savedToken.expires),
-        user : (typeof savedToken.user.toJSON() ==='function')?savedToken.user.toJSON():savedToken.user
+  let entitytype = req.body.entitytype || req.headers.entitytype ||'user';
+  let UserModelToQuery = mongoose.model(capitalize(entitytype));
+  findOneClient = (findOneClient) ? findOneClient : Promisie.promisify(Client.findOne, Client);
+  return findOneClient({ client_id: clientId  })
+    .then(client => getUserForUnauthenticatedRequest({ client, req, modelToQuery: UserModelToQuery, username, password, userQuery }))
+    .then(validateUserForUnauthenticatedRequest)
+    .then(saveTokenForAuthenticatedUser)
+    .then(result => {
+      res.status(200).json({
+        token: result.jwt_token,
+        expires: result.expires,
+        timeout: new Date(result.expires),
+        user: (typeof result.user.toJSON() ==='function') ? result.user.toJSON() : result.user
       });
     })
-    .catch(function(err){
-      var errortosend = (appenvironment==='production')?{message:err.message}:err;
-      logger.error(err);
+    .catch(e => {
+      let errortosend = (appenvironment === 'production') ? { message: e.message } : e;
+      logger.error('there was an authentication error', e);
       res.status(401).send(errortosend);
     });
 };
-
 
 /**
  * looks up valid jwt tokens and sets user variable
