@@ -1,6 +1,6 @@
 'use strict';
 const capitalize = require('capitalize');
-const moment = moment = require('moment');
+const moment = require('moment');
 const jwt = require('jwt-simple');
 const BasicStrategy = require('passport-http').BasicStrategy;
 const BearerStrategy = require('passport-http-bearer').Strategy;
