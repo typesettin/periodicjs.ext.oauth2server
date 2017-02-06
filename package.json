@@ -1,6 +1,6 @@
 {
   "name": "periodicjs.ext.oauth2server",
-  "version": "2.0.4",
+  "version": "2.1.0",
   "license": "MIT",
   "author": {
     "email": "yaw.etse@gmail.com",
@@ -36,6 +36,7 @@
     "grunt-simple-mocha": ">=0.4.0",
     "jsdoc": "^3.3.2",
     "mocha": "^2.2.5",
+    "promisie": "~1.6.1",
     "uglify-js": "^2.4.15",
     "uglifyify": "^3.0.1"
   },
