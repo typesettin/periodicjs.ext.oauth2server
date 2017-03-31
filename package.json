@@ -1,16 +1,64 @@
 {
-  "name": "periodicjs.ext.oauth2server",
-  "version": "2.2.0",
-  "license": "MIT",
+  "_args": [
+    [
+      {
+        "raw": "periodicjs.ext.oauth2server@^2.2.0",
+        "scope": null,
+        "escapedName": "periodicjs.ext.oauth2server",
+        "name": "periodicjs.ext.oauth2server",
+        "rawSpec": "^2.2.0",
+        "spec": ">=2.2.0 <3.0.0",
+        "type": "range"
+      },
+      "/Users/yawetse/Developer/github/promise/data-service-api"
+    ]
+  ],
+  "_from": "periodicjs.ext.oauth2server@>=2.2.0 <3.0.0",
+  "_id": "periodicjs.ext.oauth2server@2.2.0",
+  "_inCache": true,
+  "_location": "/periodicjs.ext.oauth2server",
+  "_nodeVersion": "6.9.1",
+  "_npmOperationalInternal": {
+    "host": "packages-18-east.internal.npmjs.com",
+    "tmp": "tmp/periodicjs.ext.oauth2server-2.2.0.tgz_1486420589523_0.6000001954380423"
+  },
+  "_npmUser": {
+    "name": "janbialostok",
+    "email": "janbialostok@gmail.com"
+  },
+  "_npmVersion": "4.0.2",
+  "_phantomChildren": {},
+  "_requested": {
+    "raw": "periodicjs.ext.oauth2server@^2.2.0",
+    "scope": null,
+    "escapedName": "periodicjs.ext.oauth2server",
+    "name": "periodicjs.ext.oauth2server",
+    "rawSpec": "^2.2.0",
+    "spec": ">=2.2.0 <3.0.0",
+    "type": "range"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/periodicjs.ext.oauth2server/-/periodicjs.ext.oauth2server-2.2.0.tgz",
+  "_shasum": "866de173b2058d8a956ad0c642ac78609a5e6989",
+  "_shrinkwrap": null,
+  "_spec": "periodicjs.ext.oauth2server@^2.2.0",
+  "_where": "/Users/yawetse/Developer/github/promise/data-service-api",
   "author": {
-    "email": "yaw.etse@gmail.com",
     "name": "Yaw Joseph Etse",
+    "email": "yaw.etse@gmail.com",
     "url": "http://about.me/yawjosephetse"
   },
   "bugs": {
     "url": "https://github.com/typesettin/periodicjs.ext.oauth2server/issues"
   },
-  "description": "OAuth 2 Server for periodic",
+  "contributors": [
+    {
+      "name": "markwaldron",
+      "email": "markewaldron@gmail.com"
+    }
+  ],
   "dependencies": {
     "express-rate-limit": "^2.5.0",
     "jwt-simple": "^0.4.1",
@@ -20,6 +68,7 @@
     "rate-limit-redis": "^1.0.4",
     "redis": "^2.6.2"
   },
+  "description": "OAuth 2 Server for periodic",
   "devDependencies": {
     "chai": "^3.0.0",
     "grunt": ">=0.4.5",
@@ -40,35 +89,46 @@
     "uglify-js": "^2.4.15",
     "uglifyify": "^3.0.1"
   },
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "http://www.opensource.org/licenses/MIT"
-    }
-  ],
+  "directories": {},
+  "dist": {
+    "shasum": "866de173b2058d8a956ad0c642ac78609a5e6989",
+    "tarball": "https://registry.npmjs.org/periodicjs.ext.oauth2server/-/periodicjs.ext.oauth2server-2.2.0.tgz"
+  },
   "engines": {
     "node": ">=4.2.x"
   },
+  "gitHead": "7dd1c93a6012104c916437e18aba5e52896022a3",
   "homepage": "https://github.com/typesettin/periodicjs.ext.oauth2server#readme",
   "keywords": [
     "periodicjs",
     "oauth2",
     "oauth2 server"
   ],
+  "license": "MIT",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "http://www.opensource.org/licenses/MIT"
+    }
+  ],
   "main": "index.js",
   "maintainers": [
     {
-      "email": "yaw.etse@gmail.com",
-      "name": "yawetse"
-    }
-  ],
-  "contributors": [
+      "name": "janbialostok",
+      "email": "janbialostok@gmail.com"
+    },
     {
-      "email": "markewaldron@gmail.com",
-      "name": "markwaldron"
+      "name": "markwaldron",
+      "email": "markewaldron@gmail.com"
+    },
+    {
+      "name": "yawetse",
+      "email": "yaw.etse@gmail.com"
     }
   ],
+  "name": "periodicjs.ext.oauth2server",
   "optionalDependencies": {},
+  "readme": "ERROR: No README data found!",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/typesettin/periodicjs.ext.oauth2server.git"
@@ -76,5 +136,6 @@
   "scripts": {
     "postinstall": "node install.js",
     "postuninstall": "node uninstall.js"
-  }
+  },
+  "version": "2.2.0"
 }

@@ -35,10 +35,10 @@ module.exports = function (periodic) {
   //console.log('before settingJSON[appenvironment]', settingJSON[appenvironment]);
   oauth2serverExtSettings = (settingJSON && settingJSON[appenvironment]) ? extend(defaultExtSettings, settingJSON[appenvironment]) : defaultExtSettings;
 
-
-  periodic.app.controller.extension.oauth2server = {
+  let oauthControllers = require('./controller/index')(periodic);
+  periodic.app.controller.extension.oauth2server = Object.assign({
     client: periodic.core.controller.controller_routes(ControllerSettings.client)
-  };
+  }, {controller:oauthControllers});
   periodic.app.controller.extension.oauth2server.settings = oauth2serverExtSettings;
   periodic.app.controller.extension.oauth2server.auth = require('./controller/auth.js')(periodic);
   periodic.app.controller.extension.oauth2server.server = require('./controller/oauth2.js')(periodic);
@@ -89,5 +89,8 @@ module.exports = function (periodic) {
   periodic.app.use('/api', apiRouter);
 
   periodic.app.use('/' + periodic.app.locals.adminPath + '/oauth/client', clientRouter);
+  let oauth2ServerRouter = require('./router/index')(periodic);
+  periodic.app.use(oauth2ServerRouter);
+
   return periodic;
 };

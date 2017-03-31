@@ -1,43 +1,16 @@
 {
-	"periodicCompatibility":"5.0.0",
+	"periodicCompatibility":"9.0.0",
 	"periodicDependencies": [{
-      "extname":"periodicjs.ext.asyncadmin",
+      "extname":"periodicjs.ext.reactadmin",
       "optional": true,
       "version":"~6.0.0"
     },{
       "extname":"periodicjs.ext.login",
       "version":"~7.0.3"
     }],
-	"periodicjs.ext.asyncadmin": {
-		"menu": {
-			"Extensions": {
-				"oauth2server":{
-					"userprivilege":"110",
-          "tree-item": "folder",
-			    "tree-item-label": "OAuth 2 Server",
-			    "tree-item-id": "oauth2server.settings",
-			    "tree-item-link": "/%locals.adminPath%/extension/periodicjs.ext.oauth2server",
-          "tree-item-input-attributes": {
-            "checked": "checked"
-					},
-			    "tree-item-attributes": {
-			      "title": "OAUTH 2 settings",
-            "style": "background-image: url(/images/adminui/svg/shield90.svg);"
-			    },
-			    "tree-item-folder-contents": [
-			    	{
-              "tree-item": "file",
-              "tree-item-label": "Clients",
-              "tree-item-id": "oauth2server.clients.all",
-              "tree-item-link": "/%locals.adminPath%/oauth/client/",
-              "tree-item-attributes": {
-                "class": "async-admin-ajax-link",
-                "title": "OAUTH 2 Clients"
-              }
-            }
-          ]          
-				}
-			}
-		}
-	}
+  "periodicjs.ext.reactadmin": {
+    "manifests": [
+      "node_modules/periodicjs.ext.oauth2server/views/reactadmin/manifests"
+    ], "navigation":"node_modules/periodicjs.ext.oauth2server/views/reactadmin/components/navigation.manifest.js"
+  }
 }
