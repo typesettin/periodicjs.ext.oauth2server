@@ -182,13 +182,15 @@ var configureOAUTH2 = function () {
           pagedata: {
             title: 'OAUTH 2 Authorization',
             toplink: '&raquo; OAUTH 2 Authorization',
-            extensions: CoreUtilities.getAdminMenu()
+            extensions: CoreUtilities.getAdminMenu(),
+            transactionID: req.oauth2.transactionID,
+            client: req.oauth2.client,
           },
           transactionID: req.oauth2.transactionID,
           user: req.user,
           client: req.oauth2.client
         };
-
+        // req.controllerData
       CoreController.renderView(req, res, viewtemplate, viewdata);
     }
   ];

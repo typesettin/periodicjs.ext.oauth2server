@@ -23,7 +23,7 @@ module.exports = function (resources) {
   };
   let clientController = CoreController.controller_routes(getModelSettings({ model: Client, model_name: 'client', searchfields: [ 'name', 'title', 'ip_addresses' ] }));
   let codeController = CoreController.controller_routes(getModelSettings({ model: Code, model_name: 'code', searchfields: [ 'user_email', 'value', 'client_id', 'redirect_uri' ] }));
-  let tokenController = CoreController.controller_routes(getModelSettings({ model: Code, model_name: 'code', searchfields: [ 'user_email', 'value', 'client_id', 'redirect_uri' ] }));
+  let tokenController = CoreController.controller_routes(getModelSettings({ model: Token, model_name: 'token', searchfields: [ 'user_email', 'value', 'client_id', 'redirect_uri' ] }));
   return {
     client: clientController,
     code: codeController,

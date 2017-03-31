@@ -72,8 +72,15 @@ module.exports = function (periodic) {
     oauth2serverController.authorization)
     .post(authController.ensureAuthenticated,
     oauth2serverController.decision);
+  apiRouter.route('/oauth2async/authorize')
+    .get(oauth2authController.ensureApiAuthenticated,
+    uacController.loadUserRoles,
+    uacController.check_user_access,
+    oauth2serverController.authorization)
+    .post(oauth2authController.ensureApiAuthenticated,
+    oauth2serverController.decision);
 
-  apiRouter.get('/oauth2/profile',
+  apiRouter.get('/oauth2async/profile',
     oauth2authController.ensureApiAuthenticated,
     oauth2authController.get_user_profile);
 
