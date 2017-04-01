@@ -24,7 +24,7 @@ var defaultExtSettings = require('./controller/default_config');
  * @requires module:path
  * @param  {object} periodic variable injection of resources from current periodic instance
  */
-module.exports = function (periodic) {
+module.exports = function(periodic) {
   //register mongo models
   var Client = periodic.mongoose.model('Client', clientSchema);
   var Code = periodic.mongoose.model('Code', codeSchema);
@@ -38,7 +38,7 @@ module.exports = function (periodic) {
   let oauthControllers = require('./controller/index')(periodic);
   periodic.app.controller.extension.oauth2server = Object.assign({
     client: periodic.core.controller.controller_routes(ControllerSettings.client)
-  }, {controller:oauthControllers});
+  }, { controller: oauthControllers });
   periodic.app.controller.extension.oauth2server.settings = oauth2serverExtSettings;
   periodic.app.controller.extension.oauth2server.auth = require('./controller/auth.js')(periodic);
   periodic.app.controller.extension.oauth2server.server = require('./controller/oauth2.js')(periodic);
@@ -60,25 +60,74 @@ module.exports = function (periodic) {
     clientController.loadClient,
     clientController.show);
   clientRouter.post('/new', oauth2authController.set_client_data, clientController.create);
-  
+
   apiRouter.get('/jwt/token', oauth2authController.get_jwt_token);
   apiRouter.post('/jwt/token', oauth2authController.get_jwt_token);
 
   // Create endpoint handlers for oauth2 authorize
   apiRouter.route('/oauth2/authorize')
     .get(authController.ensureAuthenticated,
-    uacController.loadUserRoles,
-    uacController.check_user_access,
-    oauth2serverController.authorization)
+      uacController.loadUserRoles,
+      uacController.check_user_access,
+      oauth2serverController.authorization)
     .post(authController.ensureAuthenticated,
-    oauth2serverController.decision);
-  apiRouter.route('/oauth2async/authorize')
+      oauth2serverController.decision);
+  apiRouter.get('/oauth2/profile',
+    oauth2authController.ensureApiAuthenticated,
+    oauth2authController.get_user_profile);
+
+  const reUtilPath = path.join(__dirname, '../../node_modules/periodicjs.ext.reactadmin/utility/locals.js');
+  let reactadmin = { route_prefix: '/r-admin' };
+
+  for (var x in periodic.settings.extconf.extensions) {
+    if (periodic.settings.extconf.extensions[x].name === 'periodicjs.ext.reactadmin') {
+      const reactadminUtil = require(reUtilPath)(periodic).app.locals.extension.reactadmin;
+      reactadmin = reactadminUtil;
+    }
+  }
+  periodic.app.route(`${reactadmin.route_prefix}/api/oauth2async/signin`)
+    .get((req, res) => {
+      // console.log('req._parsedOriginalUrl', req._parsedOriginalUrl);
+      let onsubmit = {
+        url: req._parsedOriginalUrl.path, //'/api/oauth2async/signin',
+        options: {
+          method: 'POST',
+        },
+        successCallback: 'func:this.props.loginUser',
+      };
+      console.log({ onsubmit });
+      res.status(200).send({
+        status: 200,
+        result: 'success',
+        data: onsubmit,
+      });
+    })
+    .post((req, res) => {
+      // console.log('req._parsedOriginalUrl', req._parsedOriginalUrl);
+      let password = (req.body && req.body.password) ?
+        req.body.password :
+        '';
+      let username = (req.body && req.body.username) ?
+        req.body.username :
+        '';
+      let __returnURL = req._parsedOriginalUrl.path.replace('/signin', '/authorize');
+      console.log({ username, password, __returnURL, });
+
+      res.status(200).send({
+        status: 200,
+        result: 'success',
+        username,
+        password,
+        __returnURL,
+      });
+    });
+  periodic.app.route(`${reactadmin.route_prefix}/api/oauth2async/authorize`)
     .get(oauth2authController.ensureApiAuthenticated,
-    uacController.loadUserRoles,
-    uacController.check_user_access,
-    oauth2serverController.authorization)
+      uacController.loadUserRoles,
+      uacController.check_user_access,
+      oauth2serverController.authorization)
     .post(oauth2authController.ensureApiAuthenticated,
-    oauth2serverController.decision);
+      oauth2serverController.decision);
 
   apiRouter.get('/oauth2async/profile',
     oauth2authController.ensureApiAuthenticated,
