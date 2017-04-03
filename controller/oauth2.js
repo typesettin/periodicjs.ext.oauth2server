@@ -27,10 +27,10 @@ var server = oauth2orize.createServer();
  * @return {String}
  * @api private
  */
-var uid = function (len) {
-  var buf = []
-    , chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    , charlen = chars.length;
+var uid = function(len) {
+  var buf = [],
+    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+    charlen = chars.length;
 
   for (var i = 0; i < len; ++i) {
     buf.push(chars[getRandomInt(0, charlen - 1)]);
@@ -48,20 +48,20 @@ var uid = function (len) {
  * @api private
  */
 
-var getRandomInt = function (min, max) {
+var getRandomInt = function(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 /**
  * configure oauth2server 
  */
-var configureOAUTH2 = function () {
+var configureOAUTH2 = function() {
   /**
    * Register serialialization function
    * @param  {object} client    client from db
    * @param  {function} callback) {	            return callback(null, client._id);	} client id from db
    */
-  server.serializeClient(function (client, callback) {
+  server.serializeClient(function(client, callback) {
     return callback(null, client._id);
   });
 
@@ -72,8 +72,8 @@ var configureOAUTH2 = function () {
    * @param  {function} callback) {	                   Client.findOne({ _id: id } pull client from db by client_id
    * @return  {function} callback function  (err,         client) {	                          if            (err) { return callback(err); }	    return callback(null, client);	  });	} returns client object
    */
-  server.deserializeClient(function (id, callback) {
-    Client.findOne({ _id: id }, function (err, client) {
+  server.deserializeClient(function(id, callback) {
+    Client.findOne({ _id: id }, function(err, client) {
       if (err) { return callback(err); }
       return callback(null, client);
     });
@@ -89,7 +89,7 @@ var configureOAUTH2 = function () {
    * @param  {object} user        user from db
    * @return {function}             callback function
    */
-  server.grant(oauth2orize.grant.code(function (client, redirectUri, user, ares, callback) {
+  server.grant(oauth2orize.grant.code(function(client, redirectUri, user, ares, callback) {
     // Create a new authorization code
     var code = new Code({
       value: uid(16),
@@ -102,35 +102,30 @@ var configureOAUTH2 = function () {
     });
 
     // Save the auth code and check for errors
-    code.save(function (err) {
+    code.save(function(err) {
       if (err) { return callback(err); }
-
+      console.log('in code callback', { code, callback });
       callback(null, code.value);
     });
   }));
 
   // Exchange authorization codes for access tokens
-  server.exchange(oauth2orize.exchange.code(function (client, code, redirectUri, callback) {
-    Code.findOne({ value: code }, function (err, authCode) {
+  server.exchange(oauth2orize.exchange.code(function(client, code, redirectUri, callback) {
+    Code.findOne({ value: code }, function(err, authCode) {
       if (err) {
         return callback(err);
-      }
-      else if (authCode === undefined || !authCode) {
+      } else if (authCode === undefined || !authCode) {
         return callback(null, false);
-      }
-      else if (client._id.toString() !== authCode.client_id.toString()) {
+      } else if (client._id.toString() !== authCode.client_id.toString()) {
         return callback(null, false);
-      }
-      else if (redirectUri !== authCode.redirect_uri) {
+      } else if (redirectUri !== authCode.redirect_uri) {
         return callback(null, false);
-      }
-      else {
+      } else {
         // Delete auth code now that it has been used
-        authCode.remove(function (err) {
+        authCode.remove(function(err) {
           if (err) {
             return callback(err);
-          }
-          else {
+          } else {
             // Create a new access token
             var token = new Token({
               value: uid(256),
@@ -142,10 +137,9 @@ var configureOAUTH2 = function () {
             });
 
             // Save the access token and check for errors
-            token.save(function (err) {
+            token.save(function(err) {
               // console.log('callback',callback);
-              if (err) { return callback(err); }
-              else {
+              if (err) { return callback(err); } else {
                 return callback(null, token);
               }
             });
@@ -164,15 +158,16 @@ var configureOAUTH2 = function () {
    * This endpoint, initializes a new authorization transaction. It finds the client requesting access to the user’s account and then renders the dialog ejs view we created eariler.
    */
   authorization = [
-    server.authorization(function (clientId, redirectUri, callback) {
+    server.authorization(function(clientId, redirectUri, callback) {
       // console.log('looking up client',clientId, redirectUri);
-      Client.findOne({ client_id: clientId }, function (err, client) {
+      Client.findOne({ client_id: clientId }, function(err, client) {
         if (err) { return callback(err); }
 
         return callback(null, client, redirectUri);
       });
     }),
-    function (req, res) {
+    function(req, res) {
+      // console.log('req.session in authorization', req.session);
       var viewtemplate = {
           viewname: 'client/dialog',
           themefileext: appSettings.templatefileextension,
@@ -185,12 +180,14 @@ var configureOAUTH2 = function () {
             extensions: CoreUtilities.getAdminMenu(),
             transactionID: req.oauth2.transactionID,
             client: req.oauth2.client,
+            // authorize: req.session.authorize, //TODO @markewaldron encrypt
           },
           transactionID: req.oauth2.transactionID,
           user: req.user,
-          client: req.oauth2.client
+          client: req.oauth2.client,
+          authorize: req.session.authorize, //TODO @markewaldron encrypt
         };
-        // req.controllerData
+      // req.controllerData
       CoreController.renderView(req, res, viewtemplate, viewdata);
     }
   ];
@@ -198,7 +195,7 @@ var configureOAUTH2 = function () {
   /**
    * Application client token middleware exchange endpoint
    * This endpoint is setup to handle the request made by the application client after they have been granted an authorization code by the user. The server.token() function will initiate a call to the server.exchange() function we created earlier.
-  */
+   */
   token = [
     server.token(),
     server.errorHandler()
@@ -207,9 +204,17 @@ var configureOAUTH2 = function () {
   /**
    * User decision middleware endpoint
    * This endpoint is setup to handle when the user either grants or denies access to their account to the requesting application client. The server.decision() function handles the data submitted by the post and will call the server.grant() function we created earlier if the user granted access.
-  */
+   */
   decision = [
-    server.decision()
+    (req, res, next) => {
+      console.log('before server decision');
+      next();
+    },
+    server.decision(),
+    (req, res, next) => {
+      console.log('AFTER server decision');
+      next();
+    }
   ]
 };
 
@@ -228,7 +233,7 @@ var configureOAUTH2 = function () {
  * @requires module:capitalize
  * @param  {object} resources variable injection from current periodic instance with references to the active logger and mongo session
  */
-var controller = function (resources) {
+var controller = function(resources) {
   logger = resources.logger;
   mongoose = resources.mongoose;
   appSettings = resources.settings;

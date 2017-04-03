@@ -95,7 +95,7 @@ module.exports = function(periodic) {
         },
         successCallback: 'func:this.props.loginUser',
       };
-      console.log({ onsubmit });
+      // console.log({ onsubmit });
       res.status(200).send({
         status: 200,
         result: 'success',
@@ -121,13 +121,46 @@ module.exports = function(periodic) {
         __returnURL,
       });
     });
+  const forceSession = (req, res, next) => {
+    req.body = Object.assign({}, req.body, {
+      use_session: true,
+    });
+    next();
+  };
+  const forceAPIReqLogin = (req, res, next) => {
+    req.login(req.user, (e) => {
+      // console.log('login error', e);
+      // console.log('req.session', req.session);
+      next(e);
+    });
+  };
   periodic.app.route(`${reactadmin.route_prefix}/api/oauth2async/authorize`)
-    .get(oauth2authController.ensureApiAuthenticated,
+    .get(forceSession,
+      oauth2authController.ensureApiAuthenticated,
+      forceAPIReqLogin,
       uacController.loadUserRoles,
       uacController.check_user_access,
       oauth2serverController.authorization)
-    .post(oauth2authController.ensureApiAuthenticated,
+    .post(forceSession,
+      oauth2authController.ensureApiAuthenticated,
+      forceAPIReqLogin,
+      (req, res, next) => {
+        // console.log('req.body', req.body);
+        // console.log('req.session', req.session);
+        if (!req.session.authorize) {
+          req.session.authorize = req.body.authorize;
+          // console.log('req.session after body append', req.session);
+        }
+        res.redirect = (location) => {
+          console.log('overwrite res.redirect', { location });
+          res.status(200).send({ location });
+        };
+        // console.log('req.session', req.session);
+        next();
+      }, //fake session   etpzo33U
       oauth2serverController.decision);
+  periodic.app.route(`${reactadmin.route_prefix}/api/oauth2/token`)
+    .post(oauth2authController.isClientAuthenticated, oauth2serverController.token);
 
   apiRouter.get('/oauth2async/profile',
     oauth2authController.ensureApiAuthenticated,

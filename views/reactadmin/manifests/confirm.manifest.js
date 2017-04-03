@@ -44,10 +44,34 @@ module.exports = (periodic) => {
                           formdata: ['oauth2data']
                         },
                         "props": {
+                          "flattenFormData": true,
                           "hiddenFields": [{
-                            "form_name": "transaction_id",
-                            "form_val": "transactionID"
+                              "form_name": "transaction_id",
+                              "form_val": "transactionID"
+                            },
+                            {
+                              "form_name": "use_session",
+                              "form_static_val": true,
+                            },
+                            {
+                              "form_name": "authorize",
+                              "form_val": 'authorize',
+                            }
+                          ],
+                          "validations": [{
+                            "name": "approve",
+                            "constraints": {
+                              "approve": {
+                                "presence": "true",
+                                // required: true,
+                                "exclusion": {
+                                  within: ['approvalrequest'],
+                                  message: '^ Please approve or deny the authorization request',
+                                }
+                              }
+                            }
                           }],
+
                           "cardForm": true,
                           "cardFormProps": {
                             "isFullwidth": true
@@ -140,7 +164,7 @@ module.exports = (periodic) => {
                               "formElements": [{
                                   "type": "select",
                                   // "label": "Approve",
-                                  "name": "Approve",
+                                  "name": "approve",
                                   value: 'approvalrequest',
                                   options: [
                                     { value: 'approvalrequest', label: 'Do you approve?', disabled: true },
@@ -149,6 +173,9 @@ module.exports = (periodic) => {
                                   ],
                                   // value: 'Approve',
                                   "layoutProps": {
+                                    style: {
+                                      marginBottom: '20px'
+                                    }
                                     // "horizontalform": true
                                   }
                                 },

@@ -1,50 +1,4 @@
 {
-  "_args": [
-    [
-      {
-        "raw": "periodicjs.ext.oauth2server@^2.2.0",
-        "scope": null,
-        "escapedName": "periodicjs.ext.oauth2server",
-        "name": "periodicjs.ext.oauth2server",
-        "rawSpec": "^2.2.0",
-        "spec": ">=2.2.0 <3.0.0",
-        "type": "range"
-      },
-      "/Users/yawetse/Developer/github/promise/data-service-api"
-    ]
-  ],
-  "_from": "periodicjs.ext.oauth2server@>=2.2.0 <3.0.0",
-  "_id": "periodicjs.ext.oauth2server@2.2.0",
-  "_inCache": true,
-  "_location": "/periodicjs.ext.oauth2server",
-  "_nodeVersion": "6.9.1",
-  "_npmOperationalInternal": {
-    "host": "packages-18-east.internal.npmjs.com",
-    "tmp": "tmp/periodicjs.ext.oauth2server-2.2.0.tgz_1486420589523_0.6000001954380423"
-  },
-  "_npmUser": {
-    "name": "janbialostok",
-    "email": "janbialostok@gmail.com"
-  },
-  "_npmVersion": "4.0.2",
-  "_phantomChildren": {},
-  "_requested": {
-    "raw": "periodicjs.ext.oauth2server@^2.2.0",
-    "scope": null,
-    "escapedName": "periodicjs.ext.oauth2server",
-    "name": "periodicjs.ext.oauth2server",
-    "rawSpec": "^2.2.0",
-    "spec": ">=2.2.0 <3.0.0",
-    "type": "range"
-  },
-  "_requiredBy": [
-    "/"
-  ],
-  "_resolved": "https://registry.npmjs.org/periodicjs.ext.oauth2server/-/periodicjs.ext.oauth2server-2.2.0.tgz",
-  "_shasum": "866de173b2058d8a956ad0c642ac78609a5e6989",
-  "_shrinkwrap": null,
-  "_spec": "periodicjs.ext.oauth2server@^2.2.0",
-  "_where": "/Users/yawetse/Developer/github/promise/data-service-api",
   "author": {
     "name": "Yaw Joseph Etse",
     "email": "yaw.etse@gmail.com",
@@ -53,12 +7,10 @@
   "bugs": {
     "url": "https://github.com/typesettin/periodicjs.ext.oauth2server/issues"
   },
-  "contributors": [
-    {
-      "name": "markwaldron",
-      "email": "markewaldron@gmail.com"
-    }
-  ],
+  "contributors": [{
+    "name": "markwaldron",
+    "email": "markewaldron@gmail.com"
+  }],
   "dependencies": {
     "express-rate-limit": "^2.5.0",
     "jwt-simple": "^0.4.1",
@@ -105,15 +57,12 @@
     "oauth2 server"
   ],
   "license": "MIT",
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "http://www.opensource.org/licenses/MIT"
-    }
-  ],
+  "licenses": [{
+    "type": "MIT",
+    "url": "http://www.opensource.org/licenses/MIT"
+  }],
   "main": "index.js",
-  "maintainers": [
-    {
+  "maintainers": [{
       "name": "janbialostok",
       "email": "janbialostok@gmail.com"
     },
@@ -137,5 +86,5 @@
     "postinstall": "node install.js",
     "postuninstall": "node uninstall.js"
   },
-  "version": "2.2.0"
+  "version": "3.0.0"
 }
