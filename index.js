@@ -103,7 +103,7 @@ module.exports = function(periodic) {
       });
     })
     .post((req, res) => {
-      // console.log('req._parsedOriginalUrl', req._parsedOriginalUrl);
+            // console.log('req._parsedOriginalUrl', req._parsedOriginalUrl);
       let password = (req.body && req.body.password) ?
         req.body.password :
         '';
@@ -111,7 +111,13 @@ module.exports = function(periodic) {
         req.body.username :
         '';
       let __returnURL = req._parsedOriginalUrl.path.replace('/signin', '/authorize');
-      console.log({ username, password, __returnURL, });
+      // console.log('before', { __returnURL });
+      __returnURL = __returnURL.replace('?format=json&', '?');
+      __returnURL = __returnURL.replace('oauth2async/authorize', 'oauth2/authorize');
+      __returnURL = (__returnURL.substr(-1) === '?')
+        ? __returnURL.substr(0, __returnURL.length - 1)
+        : __returnURL;
+      // console.log('modified',{ username, password, __returnURL, });
 
       res.status(200).send({
         status: 200,
