@@ -6,9 +6,9 @@ const clientSchema = require('../../../model/client');
 const codeSchema = require('../../../model/code');
 const tokenSchema = require('../../../model/token');
 const schemas = {
-  client: clientSchema,
-  code: codeSchema,
-  token: tokenSchema,
+  client: (clientSchema.obj) ? clientSchema.obj: clientSchema,
+  code: (codeSchema.obj) ? codeSchema.obj: codeSchema,
+  token: (tokenSchema.obj) ? tokenSchema.obj: tokenSchema,
 };
 // console.log({ schemas });
 // const customerScheme = require('../../../utility/reference/dsa/models/customerdata');
