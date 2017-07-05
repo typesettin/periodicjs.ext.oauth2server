@@ -1,97 +1,72 @@
-# periodicjs.ext.oauth2server
+# periodicjs.ext.oauth2server [![Coverage Status](https://coveralls.io/repos/github/githubUserOrgName/periodicjs.ext.oauth2server/badge.svg?branch=master)](https://coveralls.io/github/githubUserOrgName/periodicjs.ext.oauth2server?branch=master) [![Build Status](https://travis-ci.org/githubUserOrgName/periodicjs.ext.oauth2server.svg?branch=master)](https://travis-ci.org/githubUserOrgName/periodicjs.ext.oauth2server)
 
-An extension that creates an OAuth 2 Server that uses oauth2orize and http-bearer for server-to-server authenication and jwt-token-bearer for mobile/javascript client based authentication.
+  A simple extension.
 
-[API Documentation](https://github.com/typesettin/periodicjs.ext.oauth2server/blob/master/doc/api.md)
+  [API Documentation](https://github.com/githubUserOrgName/periodicjs.ext.oauth2server/blob/master/doc/api.md)
 
-## Usage
+  ## Usage
 
-Creating an OAuth2 server allows for your periodic application to restrict access to API endpoints for the authorized user or authorized applications.
+  ### CLI TASK
 
-### Step 1: Installing the Extension
+  You can preform a task via CLI
+  ```
+  $ cd path/to/application/root
+  ### Using the CLI
+  $ periodicjs ext periodicjs.ext.oauth2server hello  
+  ### Calling Manually
+  $ node index.js --cli --command --ext --name=periodicjs.ext.oauth2server --task=hello 
+  ```
 
-Install like any other extension, run `npm run install periodicjs.ext.oauth2server` from your periodic application directory.
+  ## Configuration
 
-### Step 2: Creating Application Clients
+  You can configure periodicjs.ext.oauth2server
 
-Login into Async Admin, in the navigation sidebar *Extensions -> OAuth 2 Server -> Clients*
+  ### Default Configuration
+  ```javascript
+  {
+    settings: {
+      defaults: true,
+    },
+    databases: {
+    },
+  };
+  ```
 
-Name your new Application Client, a token_id and token_secret will be automatically generated. 
 
-### Step 3: Obtain an Access Token
+  ## Installation
 
-Navigate to `/api/oauth2/authorize`, login in and approve access to your account for your application.
+  ### Installing the Extension
 
-Example:
- `http://localhost:8786/api/oauth2/authorize?client_id=[client token_id]&response_type=code&redirect_uri=[your redirect url, e.g.: http://localhost:3000]`
+  Install like any other extension, run `npm run install periodicjs.ext.oauth2server` from your periodic application root directory and then run `periodicjs addExtension periodicjs.ext.oauth2server`.
+  ```
+  $ cd path/to/application/root
+  $ npm run install periodicjs.ext.oauth2server
+  $ periodicjs addExtension periodicjs.ext.oauth2server
+  ```
+  ### Uninstalling the Extension
 
-If you approve access, you'll be granted a new authorization code to obtain a new OAUTH 2.0 token.
+  Run `npm run uninstall periodicjs.ext.oauth2server` from your periodic application root directory and then run `periodicjs removeExtension periodicjs.ext.oauth2server`.
+  ```
+  $ cd path/to/application/root
+  $ npm run uninstall periodicjs.ext.oauth2server
+  $ periodicjs removeExtension periodicjs.ext.oauth2server
+  ```
 
-Then, you'll have to post (using http basic auth with your client token_id and client secret)
 
- * code: [your authorization code]
- * grant_type: 'authorization_code'
- * redirect_url: [your redirect url]
+  ## Testing
+  *Make sure you have grunt installed*
+  ```
+  $ npm install -g grunt-cli
+  ```
 
-You'll then recieve an OAUTH Token to make API requests with (With HTTP Bearer Authentication)
-
-#### For mobile applications using JWT Tokens
-
-Send a get request to `/api/jwt/token`
-
-With either request headers or a request body containing:
- * username
- * clientid
- * password
- * entitytype (optional if using a different user account model)
-
-You'll then recieve a JWT access_token to make API requests with in either the request body or `x-access-token` header
-
-### Step 4: Make authenticated Requests
-
-* Add `periodic.app.controller.extension.oauth2server.auth.ensureApiAuthenticated` middleware before any API route that requires user authentication.
-* Add `periodic.app.controller.extension.oauth2server.auth.isClientAuthenticated` middleware before any API route that requires application client authentication.
-
-#### A quick note on security
-
-When implementing an OAuth2 server you MUST make sure to secure your application. This means running all OAuth2 endpoints over HTTPS, this extension also hashes the client secret, authorization code, and access token. 
-
-## Installation
-
-```
-$ npm install periodicjs.ext.oauth2server
-```
-
-## Configure
-
-The extension configuration is located in `content/config/extensions/periodicjs.ext.oauth2server/settings.json`
-
-```javascript
-//default settings
-	jwt: {
-		expire_period :"days",
-		expire_duration :8,
-		custom_secret :false
-	}
-```
-
-By default jwt tokens will use the same secret that your periodic application is using for cookie parsing, otherwise you can set environment specific secrets
-
-##Development
-*Make sure you have grunt installed*
-```
-$ npm install -g grunt-cli
-```
-
-Then run grunt watch
-```
-$ grunt watch
-```
-For generating documentation
-```
-$ grunt doc
-$ jsdoc2md controller/**/*.js index.js install.js uninstall.js > doc/api.md
-```
-##Notes
-* Check out https://github.com/typesettin/periodicjs for the full Periodic Documentation
-* Special thanks to [scott k smith](http://scottksmith.com/blog/2014/07/02/beer-locker-building-a-restful-api-with-node-oauth2-server/)
+  Then run grunt test or npm test
+  ```
+  $ grunt test && grunt coveralls #or locally $ npm test
+  ```
+  For generating documentation
+  ```
+  $ grunt doc
+  $ jsdoc2md commands/**/*.js config/**/*.js controllers/**/*.js  transforms/**/*.js utilities/**/*.js index.js > doc/api.md
+  ```
+  ## Notes
+  * Check out https://github.com/typesettin/periodicjs for the full Periodic Documentation

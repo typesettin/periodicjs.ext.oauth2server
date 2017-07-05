@@ -1,0 +1,18 @@
+{
+  "periodicCompatibility": "9.0.0",
+  "periodicDependencies": [
+    {
+      "extname": "periodicjs.ext.login",
+      "version": "~7.0.3"
+    }
+  ],
+  "periodicjs.ext.reactadmin": {
+    "manifests": [
+      "node_modules/periodicjs.ext.oauth2server/views/reactadmin/manifests"
+    ],
+    "unauthenticated_manifests": [
+      "node_modules/periodicjs.ext.oauth2server/views/reactadmin/unauthenticated_manifests"
+    ],
+    "navigation": "node_modules/periodicjs.ext.oauth2server/views/reactadmin/components/navigation.manifest.js"
+  }
+}
