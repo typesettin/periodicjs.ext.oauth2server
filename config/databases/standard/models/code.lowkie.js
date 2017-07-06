@@ -8,30 +8,30 @@ const scheme = {
     type: String,
     required: true,
   },
-	user_id: {
-		type: ObjectId,
-		ref: 'User'
-	},
-	user_username: String,
-	user_email: String,
-	user_entity_type: {
-		type: String,
-		'default': 'user'
-	},
+  user_id: {
+    type: ObjectId,
+    ref: 'User',
+  },
+  user_username: String,
+  user_email: String,
+  user_entity_type: {
+    type: String,
+    'default': 'user',
+  },
   redirect_uri: {
     type: String,
     required: true,
   },
-  client_id: String
+  client_id: String,
 };
 
 module.exports = {
   scheme,
   options: {},
   coreDataOptions: {
-    docid: [ '_id', 'client_id', ],
+    docid: ['_id', 'client_id', ],
     sort: { createdat: -1, },
     search: ['client_id', ],
-    population: 'user_id'
-  }
+    population: 'user_id',
+  },
 };

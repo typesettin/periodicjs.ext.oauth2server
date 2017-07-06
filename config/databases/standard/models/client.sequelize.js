@@ -26,7 +26,7 @@ const scheme = {
   },
   user_entity_type: {
     type: Sequelize.STRING,
-    'default': 'user'
+    'default': 'user',
   },
   client_id: {
     type: Sequelize.STRING,
@@ -42,7 +42,7 @@ const scheme = {
   },
   ip_addresses: {
     type: Sequelize.STRING,
-    default: null
+    default: null,
   },
   rate_limit: {
     // max: {
@@ -82,24 +82,24 @@ const scheme = {
     set(val) {
       this.setDataValue('api_settings', JSON.stringify(val));
     },
-  }
+  },
 };
 
 const options = {
   underscored: true,
   timestamps: true,
   indexes: [{
-    fields: ['createdat'],
-  }],
+    fields: ['createdat', ],
+  }, ],
 };
 
-const associations = [ {
+const associations = [{
   source: 'client',
   association: 'hasOne',
   target: 'user',
   options: {
     as: 'user_id',
-  }
+  },
 }, ];
 
 module.exports = {
@@ -107,9 +107,9 @@ module.exports = {
   options,
   associations,
   coreDataOptions: {
-    docid: [ '_id', 'name','client_id' ],
+    docid: ['_id', 'name', 'client_id', ],
     sort: { createdat: -1, },
-    search: ['title', 'name', 'client_id'],
-    population: 'user_id'
-  }
+    search: ['title', 'name', 'client_id', ],
+    population: 'user_id',
+  },
 };

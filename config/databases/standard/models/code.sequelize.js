@@ -10,21 +10,21 @@ const scheme = {
     type: Sequelize.INTEGER,
     required: true,
   },
-	user_id: {
+  user_id: {
     type: Sequelize.INTEGER,
     // type: ObjectId,
     // ref: 'User'
   },
-	user_username: {
+  user_username: {
     type: Sequelize.INTEGER,
   },
-	user_email: {
+  user_email: {
     type: Sequelize.INTEGER,
   },
-	user_entity_type: {
-		type: Sequelize.INTEGER,
-		'default': 'user'
-	},
+  user_entity_type: {
+    type: Sequelize.INTEGER,
+    'default': 'user',
+  },
   redirect_uri: {
     type: Sequelize.INTEGER,
     required: true,
@@ -37,16 +37,16 @@ const options = {
   underscored: true,
   timestamps: true,
   indexes: [{
-    fields: ['createdat'],
-  }],
+    fields: ['createdat', ],
+  }, ],
 };
-const associations = [ {
+const associations = [{
   source: 'code',
   association: 'hasOne',
   target: 'user',
   options: {
     as: 'user_id',
-  }
+  },
 }, ];
 
 module.exports = {
@@ -54,9 +54,9 @@ module.exports = {
   options,
   associations,
   coreDataOptions: {
-    docid: [ '_id', 'client_id', ],
+    docid: ['_id', 'client_id', ],
     sort: { createdat: -1, },
     search: ['client_id', ],
-    population: 'user_id'
-  }
+    population: 'user_id',
+  },
 };

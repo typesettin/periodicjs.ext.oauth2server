@@ -14,11 +14,11 @@ const scheme = {
   title: String,
   user_id: {
     type: ObjectId,
-    ref: 'User'
+    ref: 'User',
   },
   user_entity_type: {
     type: String,
-    'default': 'user'
+    'default': 'user',
   },
   client_id: {
     type: String,
@@ -34,41 +34,41 @@ const scheme = {
   },
   ip_addresses: {
     type: String,
-    default: null
+    default: null,
   },
   rate_limit: {
     max: {
       type: Number,
-      default: -1
+      default: -1,
     },
     delayMs: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
   },
   api_settings: {
     responseType: {
       type: String,
-      default: 'application/json'
+      default: 'application/json',
     },
     acknowledgementType: {
       type: String,
-      default: null
+      default: null,
     },
     sendAcknowledgement: {
       type: Boolean,
-      default: false
-    }
-  }
+      default: false,
+    },
+  },
 };
 
 module.exports = {
   scheme,
   options: {},
   coreDataOptions: {
-    docid: [ '_id', 'name', 'client_id'],
+    docid: ['_id', 'name', 'client_id', ],
     sort: { createdat: -1, },
-    search: ['title', 'name', 'client_id'],
-    population: 'user_id'
-  }
+    search: ['title', 'name', 'client_id', ],
+    population: 'user_id',
+  },
 };
