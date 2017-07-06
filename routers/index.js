@@ -2,7 +2,7 @@
 
 const periodic = require('periodicjs');
 const path = require('path');
-const adminRoute = periodic.locals.extensions.get('periodicjs.ext.passport');
+const adminRoute = periodic.locals.extensions.get('periodicjs.ext.passport').adminRoute();
 const reactAdminRoute = '/';
 const extensionRouter = periodic.express.Router();
 const periodicRoutingUtil = periodic.utilities.routing;

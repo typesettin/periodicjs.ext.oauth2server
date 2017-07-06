@@ -1,4 +1,5 @@
 'use strict';
+const periodic = require('periodicjs');
 const passport = periodic.locals.extensions.get('periodicjs.ext.passport').passport;
 const utilities = require('../utilities');
 const authUtil = utilities.auth;
@@ -7,24 +8,26 @@ function ensureApiAuthenticated(req, res, next) {
   next();
 }
 
+function getClientAuthHeaders(req, res, next) {
+  var username;
+  var password;
+  if (!req.headers.authorization && req.body && req.body.client_id && req.body.client_secret) {
+    username = req.body.client_id;
+    password = req.body.client_secret;
+    req.headers.authorization = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
+  } else if (!req.headers.authorization && req.query && req.query.client_id && req.query.client_secret) {
+    username = req.query.client_id;
+    password = req.query.client_secret;
+    req.headers.authorization = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
+  }
+  // console.log('req.body',req.body);
+  // console.log('req.headers',req.headers);
+  next();
+}
+
 const isClientAuthenticated = [
-  limit_api_requests,
-  function(req, res, next) {
-    var username;
-    var password;
-    if (!req.headers.authorization && req.body && req.body.client_id && req.body.client_secret) {
-      username = req.body.client_id;
-      password = req.body.client_secret;
-      req.headers.authorization = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
-    } else if (!req.headers.authorization && req.query && req.query.client_id && req.query.client_secret) {
-      username = req.query.client_id;
-      password = req.query.client_secret;
-      req.headers.authorization = 'Basic ' + new Buffer(username + ':' + password).toString('base64');
-    }
-    // console.log('req.body',req.body);
-    // console.log('req.headers',req.headers);
-    next();
-  },
+  limitApiRequests,
+  getClientAuthHeaders,
   passport.authenticate('client-basic', { session: false })
 ];
 
@@ -223,7 +226,7 @@ function getJWTtoken(req, res) {
  * @param {object}   res  express response object
  * @param {Function} next express middleware callback function
  */
- function limitApiRequests(req, res, next) {
+function limitApiRequests(req, res, next) {
   let cannot_connect_to_redis = (rateLimitStore) ? true : false;
   if (oauth2serverExtSettings.use_rate_limit === false || cannot_connect_to_redis) {
     next();
@@ -297,6 +300,7 @@ const isAuthenticated = [
 
 module.exports = {
   ensureApiAuthenticated: checkApiAuthentication,
+  getClientAuthHeaders,
   isClientAuthenticated,
   isJWTAuthenticated,
   isBearerAuthenticated: passport.authenticate('bearer', { session: false }),
