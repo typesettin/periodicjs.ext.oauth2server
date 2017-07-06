@@ -3,6 +3,8 @@ const oauth2orize = require('oauth2orize');
 const periodic = require('periodicjs');
 const oauth2util = require('./oauth2');
 const CodeCoreData = periodic.data.get('standard_code');
+const TokenCoreData =  ;
+const ClientCoreData = periodic.data.get('standard_client');
 
 /**
  * Register serialialization function
@@ -96,8 +98,7 @@ function exchangeCode(client, code, redirectUri, callback) {
       console.log({ deletedCode });
       // Create a new access token
       // Save the access token and check for errors
-      return periodic.data.get('standard_token')
-        .create({
+      return TokenCoreData.create({
           newdoc: {
             value: uid(256),
             client_id: authCode.client_id,
@@ -124,10 +125,71 @@ function exchangeCode(client, code, redirectUri, callback) {
  */
 function authorization(clientId, redirectUri, callback) {
   // console.log('looking up client',clientId, redirectUri);
-  periodic.data.get('standard_client')
-    .load({ query: { client_id: clientId }, })
+  ClientCoreData.load({
+    query: {
+      client_id: clientId
+    },
+  })
     .then(client => {
       callback(null, client, redirectUri);
+    })
+    .catch(callback);
+}
+
+/**
+ * HTTP Basic Auth with client_token and client_secret
+ * @param  {string} username  username parsed from auth header
+ * @param  {string} password  password parsed from auth header
+ * @param  {function} callback) {	                        Client.findOne({ client_id: username } find client by client_token_id
+ * @return {function} callback with client from db
+ */
+function basicStrategy (username, password, callback) {
+  ClientCoreData.load({
+    query: {
+      client_id: username
+    },
+  })
+  .then(client => {
+    if (!client || client.client_secret !== password) {
+      // No client found with that id or bad password
+      return callback(null, false);
+    } else {
+      // Success
+      return callback(null, client);
+    }
+  })
+  .catch(callback);
+}
+
+/**
+ * HTTP Bearer Authentication setup using an access token
+ * @param  {string} accessToken OAUTH 2.0 token
+ * @param  {function} callback)   {	                  	var UserModelToQuery;	    Token.findOne({value: accessToken }    find token in db, to pull user account
+ * @return {function} callback with user from db
+ */
+function bearerStrategy(accessToken, callback) {
+  var UserModelToQuery;
+  ClientCoreData.load({
+    query: {
+      value: accessToken,
+    },
+  })
+    .then(token => {
+      if (!token) { // No token found
+        return callback(null, false);
+      } else {
+        UserModelToQuery = mongoose.model(capitalize(token.user_entity_type));
+        UserModelToQuery.findOne({ _id: token.user_id }, function (err, user) {
+          if (err) {
+            return callback(err);
+          } else if (!user) { // No user found
+            return callback(null, false);
+          } else {
+            // Simple example with no scope
+            callback(null, user, { scope: '*' });
+          }
+        });
+      }
     })
     .catch(callback);
 }
@@ -138,4 +200,6 @@ module.exports = {
   oauth2orizeGrantCode: oauth2orize.grant.code(grantCode),
   oauth2orizeExchangeCode: oauth2orize.exchange.code(exchangeCode),
   authorization,
+  basicStrategy,
+  bearerStrategy,
 };

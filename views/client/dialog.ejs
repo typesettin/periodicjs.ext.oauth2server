@@ -1,0 +1,27 @@
+<%- include('../../../../app/views/shared/header') %>
+<%- include('../../../../app/views/shared/simple_nav') %>
+<% //console.log(locals)
+ %>
+  <main>
+    <article>
+        <section>
+          <h3>Authorize Application</h3>
+        </section>
+        <section>
+          <p>
+            <b><%- client.name %></b> is requesting <b>full access</b> to your account (<%- userdisplayname %>).
+          </p>
+          <p>Do you approve?</p>
+          <form action="/api/oauth2/authorize" method="post">
+            <input name="transaction_id" type="hidden" value="<%- transactionID %>">
+            <section>
+              <input type="submit" value="Allow">
+              <input type="submit" value="Deny" name="cancel">
+            </section>
+            <input type="hidden" name="_csrf" value="<%- token %>"/>
+          </form>
+          <hr>
+        </section>
+    </article>
+  </main>
+<%- include('../../../../app/views/shared/footer') %>
