@@ -122,13 +122,13 @@ function getClientIdFromAuthorizationHeader(authHeader) {
   return clientIdAuthHeaderMap[authHeader];
 }
 
-const redis_config = resources.settings.redis_config;
-const redisClient = redis.createClient(redis_config);
-const rateLimitStore = new RedisStore({
-  client: redisClient,
-  expiry: oauth2serverExtSettings.rate_limiter.expiry,
-  prefix: oauth2serverExtSettings.rate_limiter.prefix
-});
+// const redis_config = resources.settings.redis_config;
+// const redisClient = redis.createClient(redis_config);
+// const rateLimitStore = new RedisStore({
+//   client: redisClient,
+//   expiry: oauth2serverExtSettings.rate_limiter.expiry,
+//   prefix: oauth2serverExtSettings.rate_limiter.prefix
+// });
 
 module.exports = {
   validateUserForUnauthenticatedRequest,

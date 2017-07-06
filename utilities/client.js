@@ -1,7 +1,7 @@
 'use strict';
 const periodic = require('periodicjs');
 const crypto = require('crypto');
-const ClientCoreData = periodic.data.get('standard_client');
+const ClientCoreData = periodic.datas.get('standard_client');
 
 function preClientCreate(options) {
   return new Promise((resolve, reject) => {

@@ -2,9 +2,9 @@
 const oauth2orize = require('oauth2orize');
 const periodic = require('periodicjs');
 const oauth2util = require('./oauth2');
-const CodeCoreData = periodic.data.get('standard_code');
-const TokenCoreData =  periodic.data.get('standard_token');
-const ClientCoreData = periodic.data.get('standard_client');
+const CodeCoreData = periodic.datas.get('standard_code');
+const TokenCoreData =  periodic.datas.get('standard_token');
+const ClientCoreData = periodic.datas.get('standard_client');
 
 /**
  * Register serialialization function
