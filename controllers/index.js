@@ -1,9 +1,8 @@
 'use strict';
-const periodic = require('periodicjs');
+const auth = require('./auth');
+const oauth2 = require('./oauth2');
 
 module.exports = {
-  test: (req, res, next) => {
-    periodic.logger.silly('test middleware');
-    next();
-  }
-}
+  auth,
+  oauth2,
+};

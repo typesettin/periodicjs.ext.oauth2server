@@ -109,7 +109,7 @@ module.exports = {
   coreDataOptions: {
     docid: ['_id', 'name', 'client_id', ],
     sort: { createdat: -1, },
-    search: ['title', 'name', 'client_id', ],
+    search: ['title', 'name', 'client_id', 'ip_addresses', ],
     population: 'user_id',
   },
 };

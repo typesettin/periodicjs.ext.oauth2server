@@ -56,7 +56,7 @@ module.exports = {
   coreDataOptions: {
     docid: ['_id', 'client_id', ],
     sort: { createdat: -1, },
-    search: ['client_id', ],
+    search: ['user_email', 'value', 'client_id', 'redirect_uri'],
     population: 'user_id',
   },
 };
