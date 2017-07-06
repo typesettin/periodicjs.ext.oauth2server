@@ -2,6 +2,10 @@
 
 const periodic = require('periodicjs');
 const reactAdminRouter = periodic.express.Router();
+const reactAdminOauthSeverRouter = periodic.express.Router();
+const clientRouter = periodic.routers.get('standard_client').router;
+const codeRouter = periodic.routers.get('standard_code').router;
+const tokenRouter = periodic.routers.get('standard_token').router;
 const controllers = require('../controllers');
 
 reactAdminRouter.route('/api/oauth2async/signin')
@@ -22,5 +26,10 @@ reactAdminRouter.route('/api/oauth2async/authorize')
 reactAdminRouter.post('/api/oauth2/token',
   controllers.auth.isClientAuthenticated,
   controllers.oauth2.token);
+reactAdminOauthSeverRouter.use(controllers.auth.ensureApiAuthenticated);
+reactAdminOauthSeverRouter.use(controllers.auth.asyncUser, clientRouter);
+reactAdminOauthSeverRouter.use(codeRouter);
+reactAdminOauthSeverRouter.use(tokenRouter);
+reactAdminRouter.use('/extension/oauth2server', reactAdminOauthSeverRouter);
 
 module.exports = reactAdminRouter;

@@ -13,8 +13,6 @@ function testPostTransform(req) {
   });
 }
 
-<<<<<<< HEAD
-=======
 /*
 clientSchema.pre('save', function (next, done) {
   // let client_id;
@@ -68,7 +66,6 @@ clientSchema.pre('save', function (next, done) {
 });
  */
 
->>>>>>> ed410f80062f61e650a2bd0f8f2437f134164a13
 module.exports = {
   pre: {
     GET: {

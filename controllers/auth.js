@@ -90,6 +90,14 @@ function fakeSessions(req, res, next) { //fake session   etpzo33U
   next();
 }
 
+function asyncUser(req, res, next) {
+  if (req.method === 'POST' && req.body) {
+    req.body.user_id = (req.body.user_id) ? req.body.user_id : req.user._id;
+    req.body.user_entity_type = (req.body.user_id && req.body.user_entity_type) ? req.body.user_entity_type : req.user.entitytype;
+  }
+  next();
+}
+
 module.exports = {
   ensureApiAuthenticated,
   isClientAuthenticated,
@@ -102,4 +110,5 @@ module.exports = {
   asyncLogin,
   asyncProcessLogin,
   fakeSessions,
+  asyncUser,
 };
