@@ -12,9 +12,11 @@ const jwtRoute = periodicRoutingUtil.route_prefix('jwt');
 const jwtRouter = require('./jwt');
 const clientRoute = periodicRoutingUtil.route_prefix(path.join(adminRoute, 'oauth/client'));
 const clientRouter = require('./client');
+const reactadminRouter = require('./reactadmin');
 
 apiRouter.use(jwtRoute, jwtRouter);
 extensionRouter.use(apiRoute, apiRouter);
 extensionRouter.use(clientRoute, clientRouter);
+extensionRouter.use(reactAdminRoute, reactadminRouter);
 
 module.exports = extensionRouter;
