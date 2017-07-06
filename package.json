@@ -1,7 +1,7 @@
 {
   "name": "periodicjs.ext.oauth2server",
-  "description": "sample extension.",
-  "version": "0.0.1",
+  "description": "An extension that creates an OAuth 2 Server that uses oauth2orize and http-bearer for server-to-server authenication and jwt-token-bearer for mobile/javascript client based authentication.",
+  "version": "10.0.0",
   "main": "index.js",
   "engines": {
     "node": "^6.x"
