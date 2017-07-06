@@ -3,7 +3,7 @@ const oauth2orize = require('oauth2orize');
 const periodic = require('periodicjs');
 const oauth2util = require('./oauth2');
 const CodeCoreData = periodic.data.get('standard_code');
-const TokenCoreData =  ;
+const TokenCoreData =  periodic.data.get('standard_token');
 const ClientCoreData = periodic.data.get('standard_client');
 
 /**
