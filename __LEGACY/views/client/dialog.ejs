@@ -1,0 +1,43 @@
+<% userdisplayname = user.username || user.email || user._id %>
+<div class="ts-container">
+  <div class="ts-text-container ts-genericdoc">
+    <div class="ts-row">
+      <div class="ts-col-span8 ts-col-nofloat ts-screenmd-col-span12 ts-screensm-col-span12 ts-no-heading-margin ts-screenxs-col-span12">
+        <h2 class="text-left">Authorize Application</h2>
+        <hr>
+        <div class="ts-padding-xs">
+          <p><b><%- client.name %></b> is requesting <b>full access</b> to your account (<%- userdisplayname %>).</p>
+          <p class="ts-text-center">Do you approve?</p>
+ 
+          <form action="/api/oauth2/authorize" class="ts-form" method="post">
+            <input name="transaction_id" type="hidden" value="<%- transactionID %>">
+<!--             <div class="ts-row ts-form-row">
+              <label class="ts-label">Username / Email </label>
+              <input type="text" name="username" class="ts-col-span12 ts-input" placeholder="username or email@domain.com" autofocus="">
+            </div>
+            <div class="ts-row ts-form-row">
+              <label class="ts-label">Password</label>
+              <input type="password" name="password" placeholder="password" class="ts-col-span12  ts-input">
+              <div class="ts-col-span3 ts-screenmd-col-span6 ts-screensm-col-span6 ts-screenxs-col-span6">
+                <label class="ts-label">Remember me</label>
+                <input type="checkbox" name="rememberme"> 
+              </div>
+              <div class="ts-col-span3 ts-screenmd-col-span6 ts-screensm-col-span6 ts-screenxs-col-span6">
+                <label class="ts-label"><a href="/p-auth/forgot">Forgot Password</a></label>
+              </div>
+            </div> -->
+
+            <div class="ts-row ts-form-row ts-text-sm ts-text-center">
+
+              <input type="submit" class="ts-button ts-text-xl ts-margin-lg ts-button-accent-color ts-screenxs-width-90 ts-screensm-width-90 ts-screenmd-width-50 " value="Allow" id="allow">
+              <input type="submit" class="ts-button ts-text-xl ts-margin-lg ts-button-primary-text-color ts-screenxs-width-90 ts-screensm-width-90 ts-screenmd-width-50 " value="Deny" name="cancel" id="deny">
+            </div>
+            <input type="hidden" name="_csrf" value="<%- token %>">
+          </form>
+                            <hr>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

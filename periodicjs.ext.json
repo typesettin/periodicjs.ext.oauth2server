@@ -1,18 +1,20 @@
 {
-  "periodicCompatibility": "9.0.0",
-  "periodicDependencies": [
-    {
-      "extname": "periodicjs.ext.login",
-      "version": "~7.0.3"
+  "periodic_compatibility": "10.0.0",
+  "periodic_dependencies": [{
+    "extname": "periodicjs.ext.passport",
+    "version": "1.0.0"
+  }],
+  "periodic_type": 2,
+  "periodic_priority": 10,
+  "periodic_config": {
+    "periodicjs.ext.reactadmin": {
+      "manifests": [
+        "node_modules/periodicjs.ext.oauth2server/views/reactadmin/manifests"
+      ],
+      "unauthenticated_manifests": [
+        "node_modules/periodicjs.ext.oauth2server/views/reactadmin/unauthenticated_manifests"
+      ],
+      "navigation": "node_modules/periodicjs.ext.oauth2server/views/reactadmin/components/navigation.manifest.js"
     }
-  ],
-  "periodicjs.ext.reactadmin": {
-    "manifests": [
-      "node_modules/periodicjs.ext.oauth2server/views/reactadmin/manifests"
-    ],
-    "unauthenticated_manifests": [
-      "node_modules/periodicjs.ext.oauth2server/views/reactadmin/unauthenticated_manifests"
-    ],
-    "navigation": "node_modules/periodicjs.ext.oauth2server/views/reactadmin/components/navigation.manifest.js"
   }
 }

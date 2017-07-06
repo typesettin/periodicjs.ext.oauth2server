@@ -1,90 +1,66 @@
 {
-  "author": {
-    "name": "Yaw Joseph Etse",
-    "email": "yaw.etse@gmail.com",
-    "url": "http://about.me/yawjosephetse"
+  "name": "periodicjs.ext.oauth2server",
+  "description": "sample extension.",
+  "version": "0.0.1",
+  "main": "index.js",
+  "engines": {
+    "node": "^6.x"
   },
-  "bugs": {
-    "url": "https://github.com/typesettin/periodicjs.ext.oauth2server/issues"
+  "contributors": [],
+  "repository": {},
+  "config": {
+    "blanket": {
+      "pattern": [
+        "content/themes"
+      ]
+    }
   },
-  "contributors": [{
-    "name": "markwaldron",
-    "email": "markewaldron@gmail.com"
-  }],
+  "license": "MIT",
+  "scripts": {
+    "test": "mocha -R spec --recursive"
+  },
   "dependencies": {
-    "express-rate-limit": "^2.5.0",
-    "jwt-simple": "^0.4.1",
-    "oauth2orize": "^1.2.2",
+    "express-rate-limit": "^2.8.0",
+    "jwt-simple": "^0.5.1",
+    "oauth2orize": "^1.8.0",
     "passport-http": "^0.3.0",
     "passport-http-bearer": "^1.0.1",
-    "rate-limit-redis": "^1.0.4",
-    "redis": "^2.6.2"
+    "rate-limit-redis": "^1.1.0",
+    "redis": "^2.7.1"
   },
-  "description": "OAuth 2 Server for periodic",
   "devDependencies": {
+    "browserify": "^13.0.0",
     "chai": "^3.0.0",
-    "grunt": ">=0.4.5",
-    "grunt-browserify": ">=2.1.3",
-    "grunt-contrib-copy": ">=0.5.0",
-    "grunt-contrib-cssmin": ">=0.9.0",
-    "grunt-contrib-jshint": ">=0.10.0",
-    "grunt-contrib-less": ">=0.11.3",
-    "grunt-contrib-uglify": ">=0.4.0",
-    "grunt-contrib-watch": ">=0.6.1",
-    "grunt-jsbeautifier": ">=0.2.7",
-    "grunt-jsdoc": ">=0.5.6",
-    "grunt-newer": ">=0.7.0",
-    "grunt-simple-mocha": ">=0.4.0",
+    "chai-as-promised": "^6.0.0",
+    "coveralls": "^2.11.9",
+    "grunt": "^1.0.1",
+    "grunt-browserify": "^5.0.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-cssmin": "^1.0.1",
+    "grunt-contrib-jshint": "^1.0.0",
+    "grunt-contrib-uglify": "^1.0.1",
+    "grunt-contrib-watch": "^1.0.0",
+    "grunt-coveralls": "^1.0.1",
+    "grunt-jsbeautifier": "~0.2.7",
+    "grunt-jsdoc": "^2.0.0",
+    "grunt-mocha-cov": "^0.4.0",
+    "grunt-mocha-istanbul": "^4.0.2",
+    "grunt-newer": "^1.1.1",
+    "grunt-simple-mocha": "^0.4.1",
+    "istanbul": "^0.4.3",
     "jsdoc": "^3.3.2",
     "mocha": "^2.2.5",
-    "promisie": "~1.6.1",
-    "uglify-js": "^2.4.15",
-    "uglifyify": "^3.0.1"
+    "mocha-lcov-reporter": "^1.2.0",
+    "mocha-sinon": "^2.0.0",
+    "node-mocks-http": "^1.6.2",
+    "periodicjs": "10.0.53",
+    "semver": "^5.3.0",
+    "sinon": "^1.17.4",
+    "sinon-chai": "^2.8.0"
   },
+  "keywords": [],
+  "bugs": {},
+  "maintainers": [],
   "directories": {},
-  "dist": {
-    "shasum": "866de173b2058d8a956ad0c642ac78609a5e6989",
-    "tarball": "https://registry.npmjs.org/periodicjs.ext.oauth2server/-/periodicjs.ext.oauth2server-2.2.0.tgz"
-  },
-  "engines": {
-    "node": ">=4.2.x"
-  },
-  "gitHead": "7dd1c93a6012104c916437e18aba5e52896022a3",
-  "homepage": "https://github.com/typesettin/periodicjs.ext.oauth2server#readme",
-  "keywords": [
-    "periodicjs",
-    "oauth2",
-    "oauth2 server"
-  ],
-  "license": "MIT",
-  "licenses": [{
-    "type": "MIT",
-    "url": "http://www.opensource.org/licenses/MIT"
-  }],
-  "main": "index.js",
-  "maintainers": [{
-      "name": "janbialostok",
-      "email": "janbialostok@gmail.com"
-    },
-    {
-      "name": "markwaldron",
-      "email": "markewaldron@gmail.com"
-    },
-    {
-      "name": "yawetse",
-      "email": "yaw.etse@gmail.com"
-    }
-  ],
-  "name": "periodicjs.ext.oauth2server",
-  "optionalDependencies": {},
-  "readme": "ERROR: No README data found!",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/typesettin/periodicjs.ext.oauth2server.git"
-  },
-  "scripts": {
-    "postinstall": "node install.js",
-    "postuninstall": "node uninstall.js"
-  },
-  "version": "3.1.0"
+  "optionalDependencies": {}
 }

@@ -1,12 +1,6 @@
-# periodicjs.ext.oauth2server [![Coverage Status](https://coveralls.io/repos/github/typesettin/periodicjs.ext.oauth2server/badge.svg?branch=master)](https://coveralls.io/github/typesettin/periodicjs.ext.oauth2server?branch=master) [![Build Status](https://travis-ci.org/typesettin/periodicjs.ext.oauth2server.svg?branch=master)](https://travis-ci.org/typesettin/periodicjs.ext.oauth2server)
+# periodicjs.ext.oauth2server
 
 An extension that creates an OAuth 2 Server that uses oauth2orize and http-bearer for server-to-server authenication and jwt-token-bearer for mobile/javascript client based authentication.
-
-  [API Documentation](https://github.com/typesettin/periodicjs.ext.oauth2server/blob/master/doc/api.md)
-
-  ## Usage
-
-
 
 [API Documentation](https://github.com/typesettin/periodicjs.ext.oauth2server/blob/master/doc/api.md)
 
@@ -62,68 +56,42 @@ You'll then recieve a JWT access_token to make API requests with in either the r
 
 When implementing an OAuth2 server you MUST make sure to secure your application. This means running all OAuth2 endpoints over HTTPS, this extension also hashes the client secret, authorization code, and access token. 
 
-  ### CLI TASK
+## Installation
 
-  You can preform a task via CLI
-  ```
-  $ cd path/to/application/root
-  ### Using the CLI
-  $ periodicjs ext periodicjs.ext.oauth2server hello  
-  ### Calling Manually
-  $ node index.js --cli --command --ext --name=periodicjs.ext.oauth2server --task=hello 
-  ```
+```
+$ npm install periodicjs.ext.oauth2server
+```
 
-  ## Configuration
+## Configure
 
-  You can configure periodicjs.ext.oauth2server
+The extension configuration is located in `content/config/extensions/periodicjs.ext.oauth2server/settings.json`
 
-  ### Default Configuration
-  ```javascript
-  {
-    settings: {
-      defaults: true,
-    },
-    databases: {
-    },
-  };
-  ```
+```javascript
+//default settings
+	jwt: {
+		expire_period :"days",
+		expire_duration :8,
+		custom_secret :false
+	}
+```
 
+By default jwt tokens will use the same secret that your periodic application is using for cookie parsing, otherwise you can set environment specific secrets
 
-  ## Installation
+##Development
+*Make sure you have grunt installed*
+```
+$ npm install -g grunt-cli
+```
 
-  ### Installing the Extension
-
-  Install like any other extension, run `npm run install periodicjs.ext.oauth2server` from your periodic application root directory and then run `periodicjs addExtension periodicjs.ext.oauth2server`.
-  ```
-  $ cd path/to/application/root
-  $ npm run install periodicjs.ext.oauth2server
-  $ periodicjs addExtension periodicjs.ext.oauth2server
-  ```
-  ### Uninstalling the Extension
-
-  Run `npm run uninstall periodicjs.ext.oauth2server` from your periodic application root directory and then run `periodicjs removeExtension periodicjs.ext.oauth2server`.
-  ```
-  $ cd path/to/application/root
-  $ npm run uninstall periodicjs.ext.oauth2server
-  $ periodicjs removeExtension periodicjs.ext.oauth2server
-  ```
-
-
-  ## Testing
-  *Make sure you have grunt installed*
-  ```
-  $ npm install -g grunt-cli
-  ```
-
-  Then run grunt test or npm test
-  ```
-  $ grunt test && grunt coveralls #or locally $ npm test
-  ```
-  For generating documentation
-  ```
-  $ grunt doc
-  $ jsdoc2md commands/**/*.js config/**/*.js controllers/**/*.js  transforms/**/*.js utilities/**/*.js index.js > doc/api.md
-  ```
-  ## Notes
-  * Check out https://github.com/typesettin/periodicjs for the full Periodic Documentation
-  * Special thanks to [scott k smith](http://scottksmith.com/blog/2014/07/02/beer-locker-building-a-restful-api-with-node-oauth2-server/)
+Then run grunt watch
+```
+$ grunt watch
+```
+For generating documentation
+```
+$ grunt doc
+$ jsdoc2md controller/**/*.js index.js install.js uninstall.js > doc/api.md
+```
+##Notes
+* Check out https://github.com/typesettin/periodicjs for the full Periodic Documentation
+* Special thanks to [scott k smith](http://scottksmith.com/blog/2014/07/02/beer-locker-building-a-restful-api-with-node-oauth2-server/)
