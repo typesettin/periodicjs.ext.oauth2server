@@ -1,29 +1,4 @@
 {
-  "_from": "periodicjs.ext.oauth2server@latest",
-  "_id": "periodicjs.ext.oauth2server@10.0.0",
-  "_inBundle": false,
-  "_integrity": "sha512-2Fn1fcF6cYIEDuh5vgeftcCEEcj+DpNgnFLAndTYYJUtYmEKUCJz09qgGM9XtSSXtLsUhqZ08MAPUUA+c1vhBw==",
-  "_location": "/periodicjs.ext.oauth2server",
-  "_phantomChildren": {},
-  "_requested": {
-    "type": "tag",
-    "registry": true,
-    "raw": "periodicjs.ext.oauth2server@latest",
-    "name": "periodicjs.ext.oauth2server",
-    "escapedName": "periodicjs.ext.oauth2server",
-    "rawSpec": "latest",
-    "saveSpec": null,
-    "fetchSpec": "latest"
-  },
-  "_requiredBy": [
-    "#USER",
-    "/"
-  ],
-  "_resolved": "https://registry.npmjs.org/periodicjs.ext.oauth2server/-/periodicjs.ext.oauth2server-10.0.0.tgz",
-  "_shasum": "6a4d2468d0cc4f5ed83657fa9fd2d2133c2496d7",
-  "_spec": "periodicjs.ext.oauth2server@latest",
-  "_where": "/Users/yawetse/Developer/github/test/o2stest",
-  "bundleDependencies": false,
   "config": {
     "blanket": {
       "pattern": [
@@ -87,5 +62,5 @@
   "scripts": {
     "test": "mocha -R spec --recursive"
   },
-  "version": "10.0.0"
+  "version": "10.0.1"
 }
