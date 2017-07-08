@@ -60,7 +60,9 @@
   "optionalDependencies": {},
   "repository": {},
   "scripts": {
+    "postinstall": "cd ../../ && periodicjs aex periodicjs.ext.oauth2server",
+    "postuninstall": "cd ../../ && periodicjs rex periodicjs.ext.oauth2server",
     "test": "mocha -R spec --recursive"
   },
-  "version": "10.0.1"
+  "version": "10.1.0"
 }

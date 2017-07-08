@@ -93,19 +93,19 @@ When implementing an OAuth2 server you MUST make sure to secure your application
 
   ### Installing the Extension
 
-  Install like any other extension, run `npm run install periodicjs.ext.oauth2server` from your periodic application root directory and then run `periodicjs addExtension periodicjs.ext.oauth2server`.
+  Install like any other extension, run `npm run install periodicjs.ext.oauth2server` from your periodic application root directory and then you would normally run `periodicjs addExtension periodicjs.ext.oauth2server` but this is handled by the npm post install script.
   ```
   $ cd path/to/application/root
   $ npm run install periodicjs.ext.oauth2server
-  $ periodicjs addExtension periodicjs.ext.oauth2server
+  $ periodicjs addExtension periodicjs.ext.oauth2server //handled by npm post install
   ```
   ### Uninstalling the Extension
 
-  Run `npm run uninstall periodicjs.ext.oauth2server` from your periodic application root directory and then run `periodicjs removeExtension periodicjs.ext.oauth2server`.
+  Run `npm run uninstall periodicjs.ext.oauth2server` from your periodic application root directory and then you would normally run `periodicjs removeExtension periodicjs.ext.oauth2server` but this is handled by the npm post uninstall script.
   ```
   $ cd path/to/application/root
   $ npm run uninstall periodicjs.ext.oauth2server
-  $ periodicjs removeExtension periodicjs.ext.oauth2server
+  $ periodicjs removeExtension periodicjs.ext.oauth2server //handled by npm post uninstall
   ```
 
 
