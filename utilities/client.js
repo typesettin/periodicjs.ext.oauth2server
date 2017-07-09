@@ -1,7 +1,6 @@
 'use strict';
 const periodic = require('periodicjs');
 const crypto = require('crypto');
-const ClientCoreData = periodic.datas.get('standard_client');
 
 function preClientCreate(options) {
   return new Promise((resolve, reject) => {
@@ -12,15 +11,15 @@ function preClientCreate(options) {
       let newClient = Object.assign({
         random: Math.random(),
         title: options.name,
-        user_entity_type:'user',
+        user_entity_type: 'user',
       }, options);
       /*if (!newClient.user_id) {
         reject(new Error('Invalid User Id'));
       }
-      else */ if (!newClient.name) {
+      else */
+      if (!newClient.name) {
         reject(new Error('Invalid Name'));
-      }
-      else {
+      } else {
         // console.log('clientSchema pre validation');
         let crypto_client_id = () => {
           return new Promise((resolve, reject) => {
@@ -28,8 +27,7 @@ function preClientCreate(options) {
             crypto.pbkdf2(newClient.user_id + new Date(), salt, 10, 16, 'sha512', (err, key) => {
               if (err) {
                 reject(err);
-              }
-              else {
+              } else {
                 resolve(key.toString('hex'));
               }
             });
@@ -40,8 +38,7 @@ function preClientCreate(options) {
             crypto.pbkdf2(newClient.random + new Date(), salt, 10, 16, 'sha512', (err, key) => {
               if (err) {
                 reject(err);
-              }
-              else {
+              } else {
                 resolve(key.toString('hex'));
               }
             });
@@ -49,7 +46,7 @@ function preClientCreate(options) {
         };
         Promise.all([crypto_client_id(), crypto_client_secret()])
           .then((client_data) => {
-            const [ client_id, client_secret ] = client_data;
+            const [client_id, client_secret] = client_data;
             console.log({ client_data, client_id, client_secret, });
             // newClient.client_id = client_data[0];
             // newClient.client_secret = client_data[1];
@@ -64,6 +61,7 @@ function preClientCreate(options) {
 }
 
 function create(options) {
+  const ClientCoreData = periodic.datas.get('standard_client');
   return new Promise((resolve, reject) => {
     try {
       let newClient = {};
@@ -73,16 +71,16 @@ function create(options) {
         newClient = Object.assign({}, options);
       }
       preClientCreate(newClient)
-        .then(client => { 
-          return ClientCoreData.create({ newdoc: client });
+        .then(client => {
+          resolve(ClientCoreData.create({ newdoc: client }));
         })
+        // .then(resolve)
         .catch(reject);
     } catch (e) {
       reject(e);
     }
   });
 }
-
 
 module.exports = {
   create,
