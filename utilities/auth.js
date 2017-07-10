@@ -1,5 +1,6 @@
 'use strict';
 const oauth2orize = require('oauth2orize');
+const Promisie = require('promisie');
 const RateLimit = require('express-rate-limit');
 const RedisStore = require('rate-limit-redis');
 /**
@@ -35,7 +36,7 @@ function validateUserForUnauthenticatedRequest(options = {}) {
       .catch(e => Promisie.reject(e));
   }
   return comparePassword();
-};
+}
 
 /**
  * gets user from db
@@ -50,15 +51,15 @@ function getUserForUnauthenticatedRequest(options = {}) {
         'assets.changes': 0,
         '__v': 0,
         changes: 0,
-        content: 0
+        content: 0,
       })
       .populate('tags categories contenttypes assets primaryasset')
       .exec((err, user) => {
         if (err) reject(err);
-        else resolve(Object.assign(options, { user }));
+        else resolve(Object.assign(options, { user, }));
       });
   });
-};
+}
 
 /**
  * saves generated expiring JWT token to user document in db
@@ -71,7 +72,7 @@ function saveTokenForAuthenticatedUser(options = {}) {
     let jwt_token = jwt.encode({
       iss: options.user._id,
       ent: options.user.entitytype,
-      exp: expires
+      exp: expires,
     }, jwtTokenSecret);
     let token = new Token({
       client_id: options.client.client_id,
@@ -80,15 +81,15 @@ function saveTokenForAuthenticatedUser(options = {}) {
       user_email: options.user.email,
       expires: new Date(expires),
       user_entity_type: options.user.entitytype,
-      value: jwt_token
+      value: jwt_token,
     });
     return Promisie.promisify(token.save, token)()
-      .then(() => Object.assign(options, { jwt_token, expires }))
+      .then(() => Object.assign(options, { jwt_token, expires, }))
       .catch(e => Promisie.reject(e));
   } catch (e) {
     return Promisie.reject(e);
   }
-};
+}
 
 /**
  * quieries mongo for clients and users - stores with ID as key and rate limits as value
@@ -100,14 +101,14 @@ function getCustomRateLimits() {
     clients.map(client => {
       let client_from_mongo = (client.toJSON) ? client.toJSON() : client;
       let clientId = client_from_mongo.client_id.toString();
-      allClientLimits[clientId] = client.rate_limit
-    })
+      allClientLimits[clientId] = client.rate_limit;
+    });
   });
   user_based_rate_limits = {
     clients: allClientLimits,
-    users: allUserLimits
+    users: allUserLimits,
   };
-};
+}
 
 const clientIdAuthHeaderMap = {};
 

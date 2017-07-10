@@ -44,13 +44,13 @@ function preClientCreate(options) {
             });
           });
         };
-        Promise.all([crypto_client_id(), crypto_client_secret()])
+        Promise.all([crypto_client_id(), crypto_client_secret(), ])
           .then((client_data) => {
-            const [client_id, client_secret] = client_data;
-            console.log({ client_data, client_id, client_secret, });
+            const [client_id, client_secret, ] = client_data;
+            // console.log({ client_data, client_id, client_secret, });
             // newClient.client_id = client_data[0];
             // newClient.client_secret = client_data[1];
-            resolve(Object.assign(newClient, { client_id, client_secret }));
+            resolve(Object.assign(newClient, { client_id, client_secret, }));
           })
           .catch(reject);
       }
@@ -72,7 +72,7 @@ function create(options) {
       }
       preClientCreate(newClient)
         .then(client => {
-          resolve(ClientCoreData.create({ newdoc: client }));
+          resolve(ClientCoreData.create({ newdoc: client, }));
         })
         // .then(resolve)
         .catch(reject);

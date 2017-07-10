@@ -4,10 +4,6 @@ const passport = periodic.locals.extensions.get('periodicjs.ext.passport').passp
 const utilities = require('../utilities');
 const authUtil = utilities.auth;
 
-function ensureApiAuthenticated(req, res, next) {
-  next();
-}
-
 function getClientAuthHeaders(req, res, next) {
   var username;
   var password;
