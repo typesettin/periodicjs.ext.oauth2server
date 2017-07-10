@@ -7,7 +7,7 @@
   "periodic_type": 2,
   "periodic_priority": 10,
   "periodic_config": {
-    "periodicjs.ext.reactadmin": {
+    "periodicjs_ext_reactadmin": {
       "manifests": [
         "node_modules/periodicjs.ext.oauth2server/views/reactadmin/manifests"
       ],
