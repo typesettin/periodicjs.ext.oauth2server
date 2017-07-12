@@ -72,7 +72,7 @@ function isJWTAuthenticated(req, res, next) {
   } else {
     next();
   }
-};
+}
 
 function getJWTProfile(req, res, next) {
   next();
