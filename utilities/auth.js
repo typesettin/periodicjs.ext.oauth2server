@@ -3,6 +3,7 @@ const oauth2orize = require('oauth2orize');
 const Promisie = require('promisie');
 const RateLimit = require('express-rate-limit');
 const RedisStore = require('rate-limit-redis');
+const periodic = require('periodicjs');
 /**
  * validates user password
  * @return {object}        Promise for saving token
@@ -43,22 +44,38 @@ function validateUserForUnauthenticatedRequest(options = {}) {
  * @return {object}        Promise for finding db user
  */
 function getUserForUnauthenticatedRequest(options = {}) {
-  if (!options.username || !options.password) return Promisie.reject(new Error('Authentication Error'));
-  return new Promisie((resolve, reject) => {
-    options.modelToQuery.findOne(options.userQuery, {
-        'primaryasset.changes': 0,
-        'primaryasset.content': 0,
-        'assets.changes': 0,
-        '__v': 0,
-        changes: 0,
-        content: 0,
-      })
-      .populate('tags categories contenttypes assets primaryasset')
-      .exec((err, user) => {
-        if (err) reject(err);
-        else resolve(Object.assign(options, { user, }));
-      });
-  });
+  if (!options.username || !options.password) {
+    return Promisie.reject(new Error('Authentication Error'));
+  } else {
+    return new Promise((resolve, reject) => {
+      try {
+        const { client, req, query, username, password, entitytype, } = options;
+        const userAccountCoreData = periodic.locals.extensions.get('periodicjs.ext.passport').auth.getAuthCoreDataModel({ entitytype, });//get from req
+        console.log({ userAccountCoreData, }, 'getUserForUnauthenticatedRequest', { client, query, username, password, entitytype, });
+        userAccountCoreData.load({
+          query,
+          population: ' ',
+          fields: {
+            'primaryasset.changes': 0,
+            'primaryasset.content': 0,
+            'assets.changes': 0,
+            '__v': 0,
+            changes: 0,
+            content: 0,
+          },
+        })
+          .then(userAccount => {
+            //checkifuser
+            //comparepassword
+            console.log({ userAccount });
+            resolve(Object.assign(options, { user : userAccount, }));
+          })
+          .catch(reject);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
 }
 
 /**
@@ -131,6 +148,28 @@ function getClientIdFromAuthorizationHeader(authHeader) {
 //   prefix: oauth2serverExtSettings.rate_limiter.prefix
 // });
 
+function findOneClient(options) {
+  return new Promise((resolve, reject) => {
+    try {
+      const { clientId, } = options;
+      const ClientCoreData = periodic.datas.get('standard_client');
+      ClientCoreData.load({
+        query: { client_id: clientId, },
+      })
+        .then(client => {
+          if (!client) {
+            reject(new Error('Invalid OAuth2 Client'));
+          } else {
+            resolve(client);
+          }
+        })
+      .catch(reject);
+    } catch (e) {
+      reject(e);  
+    }
+  });
+}
+
 module.exports = {
   validateUserForUnauthenticatedRequest,
   getUserForUnauthenticatedRequest,
@@ -138,4 +177,5 @@ module.exports = {
   getCustomRateLimits,
   clientIdAuthHeaderMap,
   getClientIdFromAuthorizationHeader,
+  findOneClient,
 };

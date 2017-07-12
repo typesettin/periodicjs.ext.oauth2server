@@ -3,6 +3,8 @@ const periodic = require('periodicjs');
 const passport = periodic.locals.extensions.get('periodicjs.ext.passport').passport;
 const utilities = require('../utilities');
 const authUtil = utilities.auth;
+const appenvironment = periodic.settings.application.environment;
+const logger = periodic.logger;
 
 function getClientAuthHeaders(req, res, next) {
   var username;
@@ -184,23 +186,25 @@ function asyncUser(req, res, next) {
  * @param {object}   res  express response object
  */
 function getJWTtoken(req, res) {
-  let username = req.body.username || req.headers.username;
-  let clientId = req.body.clientid || req.headers.clientid;
-  let password = req.body.password || req.headers.password;
-  let userQuery = {
+  const username = req.body.username || req.headers.username || req.body.name || req.headers.name;
+  const clientId = req.body.clientid || req.headers.clientid;
+  const password = req.body.password || req.headers.password;
+  const query = {
     $or: [{
-      username: new RegExp(username, 'i')
+      name: username,
     }, {
-      email: new RegExp(username, 'i')
+      email: username,
     }]
   };
-  let entitytype = req.body.entitytype || req.headers.entitytype || 'user';
-  let UserModelToQuery = mongoose.model(capitalize(entitytype));
-  findOneClient = (findOneClient) ? findOneClient : Promisie.promisify(Client.findOne, Client);
-  return findOneClient({ client_id: clientId })
-    .then(client => getUserForUnauthenticatedRequest({ client, req, modelToQuery: UserModelToQuery, username, password, userQuery }))
-    .then(validateUserForUnauthenticatedRequest)
-    .then(saveTokenForAuthenticatedUser)
+  const entitytype = req.body.entitytype || req.headers.entitytype || 'user';
+  // const UserModelToQuery = mongoose.model(capitalize(entitytype));
+  // findOneClient = (findOneClient) ? findOneClient : Promisie.promisify(Client.findOne, Client);
+  console.log('getJWTtoken', { username, clientId, password, query, entitytype, });
+
+  return utilities.auth.findOneClient({ clientId, })
+    .then(client => utilities.auth.getUserForUnauthenticatedRequest({ client, req, query, username, password, entitytype, }))
+    .then(utilities.auth.validateUserForUnauthenticatedRequest)
+    .then(utilities.auth.saveTokenForAuthenticatedUser)
     .then(result => {
       res.status(200).json({
         token: result.jwt_token,
@@ -210,11 +214,11 @@ function getJWTtoken(req, res) {
       });
     })
     .catch(e => {
-      let errortosend = (appenvironment === 'production') ? { message: e.message } : e;
+      let errortosend = (appenvironment === 'production') ? { message: e.message, } : e;
       logger.error('there was an authentication error', e);
       res.status(401).send(errortosend);
     });
-};
+}
 
 /**
  * returns rate limiter middleware with configured settings based on client, or default settings if headers have no client_id
