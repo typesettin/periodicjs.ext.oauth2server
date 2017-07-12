@@ -199,7 +199,7 @@ function getJWTtoken(req, res) {
   const entitytype = req.body.entitytype || req.headers.entitytype || 'user';
   // const UserModelToQuery = mongoose.model(capitalize(entitytype));
   // findOneClient = (findOneClient) ? findOneClient : Promisie.promisify(Client.findOne, Client);
-  console.log('getJWTtoken', { username, clientId, password, query, entitytype, });
+  // console.log('getJWTtoken', { username, clientId, password, query, entitytype, });
 
   return utilities.auth.findOneClient({ clientId, })
     .then(client => utilities.auth.getUserForUnauthenticatedRequest({ client, req, query, username, password, entitytype, }))

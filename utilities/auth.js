@@ -51,7 +51,9 @@ function getUserForUnauthenticatedRequest(options = {}) {
       try {
         const { client, req, query, username, password, entitytype, } = options;
         const userAccountCoreData = periodic.locals.extensions.get('periodicjs.ext.passport').auth.getAuthCoreDataModel({ entitytype, });//get from req
-        console.log({ userAccountCoreData, }, 'getUserForUnauthenticatedRequest', { client, query, username, password, entitytype, });
+        console.log('getUserForUnauthenticatedRequest', { client, query, username, password, entitytype, });
+        const util = require('util');
+        console.log(util.inspect(query));
         userAccountCoreData.load({
           query,
           population: ' ',
