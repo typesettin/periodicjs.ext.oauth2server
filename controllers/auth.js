@@ -28,7 +28,7 @@ function getClientAuthHeaders(req, res, next) {
 const isClientAuthenticated = [
   limitApiRequests,
   getClientAuthHeaders,
-  passport.authenticate('client-basic', { session: false })
+  passport.authenticate('client-basic', { session: false, }),
 ];
 
 
@@ -50,18 +50,16 @@ function isJWTAuthenticated(req, res, next) {
    *    ...in that order.
    */
   const token = (req.body && req.body.access_token) || req.query.access_token || req.headers['x-access-token'];
-  // console.log('token',token);
   if (token) {
     try {
       const decoded = jwt.decode(token, jwtTokenSecret);
-      console.log({ decoded });
       const entitytype = decoded.ent;
       const userAccountCoreData = periodic.locals.extensions.get('periodicjs.ext.passport').auth.getAuthCoreDataModel({ entitytype, }); //get from req
       if (decoded.exp <= Date.now()) {
         res.status(400).send('Access token has expired', 400);
       } else {
         userAccountCoreData.load({
-          query:{ '_id': decoded.iss },
+          query:{ '_id': decoded.iss, },
           fields: {
             'primaryasset.changes': 0,
             'primaryasset.content': 0,
@@ -72,7 +70,6 @@ function isJWTAuthenticated(req, res, next) {
           },
         })
           .then(user => { 
-            console.log({ user });
             req.user = user;
             return next();
           })
@@ -177,8 +174,8 @@ function fakeSessions(req, res, next) { //fake session   etpzo33U
     // console.log('req.session after body append', req.session);
   }
   res.redirect = (location) => {
-    console.log('overwrite res.redirect', { location });
-    res.status(200).send({ location });
+    console.log('overwrite res.redirect', { location, });
+    res.status(200).send({ location, });
   };
   // console.log('req.session', req.session);
   next();
@@ -206,7 +203,7 @@ function getJWTtoken(req, res) {
       name: username,
     }, {
       email: username,
-    }]
+    },],
   };
   const entitytype = req.body.entitytype || req.headers.entitytype || 'user';
   // const UserModelToQuery = mongoose.model(capitalize(entitytype));
@@ -276,8 +273,8 @@ function limitApiRequests(req, res, next) {
   //     return limiter(req, res, next);
   //   }
   // } catch (e) {
-    logger.warn('FIX LIMIT API REQUESTS');
-    next();
+  logger.warn('FIX LIMIT API REQUESTS');
+  next();
   // }
 }
 
@@ -286,7 +283,7 @@ function bearerAuth(req, res, next) {
   if (req.user) {
     next();
   } else {
-    return passport.authenticate('bearer', { session: false })(req, res, next);
+    return passport.authenticate('bearer', { session: false, })(req, res, next);
   }
 }
 
@@ -314,7 +311,7 @@ function checkIsAuthenticated(req, res, next) {
 
 const isAuthenticated = [
   checkIsAuthenticated,
-  passport.authenticate(['bearer'], { session: false }),
+  passport.authenticate(['bearer',], { session: false, }),
 ];
 
 module.exports = {
@@ -322,7 +319,7 @@ module.exports = {
   getClientAuthHeaders,
   isClientAuthenticated,
   isJWTAuthenticated,
-  isBearerAuthenticated: passport.authenticate('bearer', { session: false }),
+  isBearerAuthenticated: passport.authenticate('bearer', { session: false, }),
   isAuthenticated,
   getJWTProfile,
   getUserProfile,
