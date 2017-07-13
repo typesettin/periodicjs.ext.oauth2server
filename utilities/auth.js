@@ -120,7 +120,7 @@ function saveTokenForAuthenticatedUser(options = {}) {
           newdoc,
         })
         .then(token => {
-          console.log('in code callback', { token, });
+          // console.log('in code callback', { token, });
           return resolve(Object.assign(options, { jwt_token, expires, }));
         })
         .catch(reject);

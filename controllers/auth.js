@@ -206,7 +206,7 @@ function getJWTtoken(req, res) {
     .then(utilities.auth.validateUserForUnauthenticatedRequest)
     .then(utilities.auth.saveTokenForAuthenticatedUser)
     .then(result => {
-      console.log('getJWTtoken', { result, });
+      // console.log('getJWTtoken', { result, });
       res.status(200).json({
         token: result.jwt_token,
         expires: result.expires,
