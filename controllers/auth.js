@@ -2,7 +2,7 @@
 const periodic = require('periodicjs');
 const passport = periodic.locals.extensions.get('periodicjs.ext.passport').passport;
 const utilities = require('../utilities');
-const authUtil = utilities.auth;
+// const authUtil = utilities.auth;
 const appenvironment = periodic.settings.application.environment;
 const logger = periodic.logger;
 
@@ -206,11 +206,13 @@ function getJWTtoken(req, res) {
     .then(utilities.auth.validateUserForUnauthenticatedRequest)
     .then(utilities.auth.saveTokenForAuthenticatedUser)
     .then(result => {
+      console.log('getJWTtoken', { result, });
       res.status(200).json({
         token: result.jwt_token,
         expires: result.expires,
         timeout: new Date(result.expires),
-        user: (typeof result.user.toJSON() === 'function') ? result.user.toJSON() : result.user
+        user: (result.user && result.user.toJSON && typeof result.user.toJSON() === 'function') ?
+          result.user.toJSON() : result.user,
       });
     })
     .catch(e => {

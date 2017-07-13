@@ -129,3 +129,5 @@ When implementing an OAuth2 server you MUST make sure to secure your application
   ## Notes
   * Check out https://github.com/typesettin/periodicjs for the full Periodic Documentation
   * Special thanks to [scott k smith](http://scottksmith.com/blog/2014/07/02/beer-locker-building-a-restful-api-with-node-oauth2-server/)
+  * TODOS
+    * reset login attempts
