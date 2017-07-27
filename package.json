@@ -64,9 +64,5 @@
     "postuninstall": "cd ../../ && periodicjs rex periodicjs.ext.oauth2server",
     "test": "mocha -R spec --recursive"
   },
-<<<<<<< HEAD
-  "version": "10.3.0"
-=======
   "version": "10.4.0"
->>>>>>> 3e67afc848c9b7626748b5220600b9af10cb2c9c
 }
