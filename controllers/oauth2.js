@@ -1,4 +1,5 @@
 'use strict';
+const periodic = require('periodicjs');
 const utilities = require('../utilities');
 const server = utilities.server;
 const oauth2server = utilities.oauth2server;
@@ -11,12 +12,12 @@ const oauth2server = utilities.oauth2server;
  */
 function authorizationView(req, res) {
   // console.log('req.session in authorization', req.session);
-  var viewtemplate = {
+  const viewtemplate = {
     viewname: 'client/dialog',
     // themefileext: appSettings.templatefileextension,
-    extname: 'periodicjs.ext.oauth2server'
-  },
-  viewdata = {
+    extname: 'periodicjs.ext.oauth2server',
+  };
+  const viewdata = {
     pagedata: {
       // title: 'OAUTH 2 Authorization',
       // toplink: '&raquo; OAUTH 2 Authorization',
@@ -27,9 +28,12 @@ function authorizationView(req, res) {
     },
     transactionID: req.oauth2.transactionID,
     user: req.user,
+    userdisplayname: req.user.name || req.user.email || req.user._id,
+    passportUser: req.user,
     client: req.oauth2.client,
     authorize: req.session.authorize, //TODO @markewaldron encrypt
   };
+  // console.log({ viewdata });
   // req.controllerData
   // CoreController.renderView(req, res, viewtemplate, viewdata);
   periodic.core.controller.render(req, res, viewtemplate, viewdata);
@@ -67,7 +71,7 @@ const decision = [
   (req, res, next) => {
     console.log('AFTER server decision');
     next();
-  }
+  },
 ];
 module.exports = {
   token,

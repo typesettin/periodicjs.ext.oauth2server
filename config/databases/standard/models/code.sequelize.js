@@ -40,23 +40,23 @@ const options = {
     fields: ['createdat', ],
   }, ],
 };
-const associations = [{
-  source: 'code',
-  association: 'hasOne',
-  target: 'user',
-  options: {
-    as: 'user_id',
-  },
-}, ];
+// const associations = [{
+//   source: 'code',
+//   association: 'hasOne',
+//   target: 'user',
+//   options: {
+//     as: 'user_id',
+//   },
+// }, ];
 
 module.exports = {
   scheme,
   options,
-  associations,
+  // associations,
   coreDataOptions: {
     docid: ['_id', 'client_id', ],
     sort: { createdat: -1, },
     search: ['user_email', 'value', 'client_id', 'redirect_uri'],
-    population: 'user_id',
+    // population: 'user_id',
   },
 };

@@ -2,9 +2,18 @@
 const oauth2orize = require('oauth2orize');
 const periodic = require('periodicjs');
 const oauth2util = require('./oauth2');
-const CodeCoreData = periodic.datas.get('standard_code');
-const TokenCoreData =  periodic.datas.get('standard_token');
-const ClientCoreData = periodic.datas.get('standard_client');
+
+function getCodeCoreData() {
+  return periodic.datas.get('standard_code');
+}
+
+function getTokenCoreData() {
+  return periodic.datas.get('standard_token');
+}
+
+function getClientCoreData() {
+  return periodic.datas.get('standard_client');
+}
 
 /**
  * Register serialialization function
@@ -23,13 +32,14 @@ function serializeClient(client, callback) {
  * @return  {function} callback function  (err,         client) {	                          if            (err) { return callback(err); }	    return callback(null, client);	  });	} returns client object
  */
 function deserializeClient(id, callback) {
-  CodeCoreData
+  getClientCoreData()
     .load({
       query: {
         _id: id,
-      }
+      },
     })
     .then(client => {
+      // console.log({ client, id })
       return callback(null, client);
     })
     .catch(err => {
@@ -50,23 +60,56 @@ function deserializeClient(id, callback) {
 function grantCode(client, redirectUri, user, ares, callback) {
   // Create a new authorization code
   // Save the auth code and check for errors
-  CodeCoreData
+  getCodeCoreData()
     .create({
       newdoc: {
         value: oauth2util.uid(16),
         client_id: client._id,
         redirect_uri: redirectUri,
         user_id: user._id,
-        user_username: user.username,
+        user_username: user.name,
         user_email: user.email,
-        user_entity_type: user.entitytype
+        user_entity_type: user.entitytype,
       },
     })
-    .then(code => { 
-      console.log('in code callback', { code, callback });
+    .then(code => {
+      // console.log('in code callback', { code, callback });
       callback(null, code.value);
     })
     .catch(callback);
+}
+
+/**
+ * Return a random int, used by `utils.uid()`
+ *
+ * @param {Number} min
+ * @param {Number} max
+ * @return {Number}
+ * @api private
+ */
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+/**
+ * Return a unique identifier with the given `len`.
+ *
+ *     utils.uid(10);
+ *     // => "FDaS435D2z"
+ *
+ * @param {Number} len
+ * @return {String}
+ * @api private
+ */
+function uid(len) {
+  var buf = [],
+    chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789',
+    charlen = chars.length;
+
+  for (var i = 0; i < len; ++i) {
+    buf.push(chars[getRandomInt(0, charlen - 1)]);
+  }
+
+  return buf.join('');
 }
 
 /**
@@ -78,9 +121,9 @@ function grantCode(client, redirectUri, user, ares, callback) {
  * @param {any} callback 
  */
 function exchangeCode(client, code, redirectUri, callback) {
-  CodeCoreData.load({ query: { value: code }, })
+  getCodeCoreData().load({ query: { value: code, }, })
     .then(authCode => {
-      console.log({ authCode, client });
+      // console.log({ authCode, client, redirectUri });
       if (authCode === undefined || !authCode) {
         return callback(null, false);
       } else if (client._id.toString() !== authCode.client_id.toString()) {
@@ -89,29 +132,34 @@ function exchangeCode(client, code, redirectUri, callback) {
         return callback(null, false);
       } else {
         // Delete auth code now that it has been used
-        return CodeCoreData.delete({
-          id: authCode._id,
-        });
+        getCodeCoreData()
+          .delete({
+            deleteid: authCode._id.toString(),
+          })
+          .then(deletedCode => {
+            // console.log({ deletedCode });
+            // Create a new access token
+            // Save the access token and check for errors
+            return getTokenCoreData().create({
+              newdoc: {
+                value: uid(256),
+                client_id: authCode.client_id,
+                user_id: authCode.user_id,
+                user_username: authCode.user_username,
+                user_email: authCode.user_email,
+                user_entity_type: authCode.user_entity_type,
+              },
+            });
+          })
+          .then(newToken => {
+            // console.log({ newToken });
+            return callback(null, newToken);
+          })
+          .catch(e => {
+            periodic.logger.error(e);
+            return callback(e);
+          });
       }
-    })
-    .then(deletedCode => {
-      console.log({ deletedCode });
-      // Create a new access token
-      // Save the access token and check for errors
-      return TokenCoreData.create({
-          newdoc: {
-            value: uid(256),
-            client_id: authCode.client_id,
-            user_id: authCode.user_id,
-            user_username: authCode.user_username,
-            user_email: authCode.user_email,
-            user_entity_type: authCode.user_entity_type,
-          },
-        });
-    })
-    .then(newToken => {
-      console.log({ newToken });
-      return callback(null, newToken);
     })
     .catch(callback);
 }
@@ -125,11 +173,11 @@ function exchangeCode(client, code, redirectUri, callback) {
  */
 function authorization(clientId, redirectUri, callback) {
   // console.log('looking up client',clientId, redirectUri);
-  ClientCoreData.load({
-    query: {
-      client_id: clientId
-    },
-  })
+  getClientCoreData().load({
+      query: {
+        client_id: clientId,
+      },
+    })
     .then(client => {
       callback(null, client, redirectUri);
     })
@@ -143,22 +191,22 @@ function authorization(clientId, redirectUri, callback) {
  * @param  {function} callback) {	                        Client.findOne({ client_id: username } find client by client_token_id
  * @return {function} callback with client from db
  */
-function basicStrategy (username, password, callback) {
-  ClientCoreData.load({
-    query: {
-      client_id: username
-    },
-  })
-  .then(client => {
-    if (!client || client.client_secret !== password) {
-      // No client found with that id or bad password
-      return callback(null, false);
-    } else {
-      // Success
-      return callback(null, client);
-    }
-  })
-  .catch(callback);
+function basicStrategy(username, password, callback) {
+  getClientCoreData().load({
+      query: {
+        client_id: username,
+      },
+    })
+    .then(client => {
+      if (!client || client.client_secret !== password) {
+        // No client found with that id or bad password
+        return callback(null, false);
+      } else {
+        // Success
+        return callback(null, client);
+      }
+    })
+    .catch(callback);
 }
 
 /**
@@ -169,24 +217,24 @@ function basicStrategy (username, password, callback) {
  */
 function bearerStrategy(accessToken, callback) {
   var UserModelToQuery;
-  ClientCoreData.load({
-    query: {
-      value: accessToken,
-    },
-  })
+  getClientCoreData().load({
+      query: {
+        value: accessToken,
+      },
+    })
     .then(token => {
       if (!token) { // No token found
         return callback(null, false);
       } else {
         UserModelToQuery = mongoose.model(capitalize(token.user_entity_type));
-        UserModelToQuery.findOne({ _id: token.user_id }, function (err, user) {
+        UserModelToQuery.findOne({ _id: token.user_id, }, function(err, user) {
           if (err) {
             return callback(err);
           } else if (!user) { // No user found
             return callback(null, false);
           } else {
             // Simple example with no scope
-            callback(null, user, { scope: '*' });
+            callback(null, user, { scope: '*', });
           }
         });
       }
@@ -202,4 +250,5 @@ module.exports = {
   authorization,
   basicStrategy,
   bearerStrategy,
+  uid,
 };

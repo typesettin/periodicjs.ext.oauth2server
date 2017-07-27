@@ -1,35 +1,24 @@
 'use strict';
 const periodic = require('periodicjs');
-function testPreTransform(req) {
-  return new Promise((resolve, reject) => {
-    periodic.logger.silly('sample pre transfrom', req.params.id);
-    resolve(req);
-  });
-}
-function testPostTransform(req) {
-  return new Promise((resolve, reject) => {
-    periodic.logger.silly('sample post transfrom', req.params.id);
-    resolve(req);
-  });
-}
+const utilities = require('../utilities');
 
-/*
-clientSchema.pre('save', );
- */
+function createClientPreTransform(req) {
+  return new Promise((resolve, reject) => {
+    req = periodic.locals.extensions.get('periodicjs.ext.admin').data.fixGenericReqBody(req);
+    utilities.client.preClientCreate(req.body)
+      .then(newClient => {
+        req.body = Object.assign(req.body, newClient);
+        resolve(req);
+      })
+      .catch(reject);
+  });
+}
 
 module.exports = {
   pre: {
-    GET: {
-      '/some/route/path/:id':[testPreTransform]
+    POST: {
+      '/b-admin/data/standard_clients': [createClientPreTransform, ],
     },
-    PUT: {
-    }
   },
-  post: {
-    GET: {
-      '/another/route/test/:id':[testPostTransform]
-    },
-    PUT: {
-    }
-  }
-}
+  post: {},
+};
