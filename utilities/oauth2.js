@@ -1,5 +1,5 @@
 'use strict';
-const oauth2orize = require('oauth2orize');
+// const oauth2orize = require('oauth2orize');
 
 /**
  * Return a unique identifier with the given `len`.
@@ -19,7 +19,7 @@ function uid(len) {
     buf.push(chars[getRandomInt(0, charlen - 1)]);
   }
   return buf.join('');
-};
+}
 
 /**
  * Return a random int, used by `utils.uid()`

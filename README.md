@@ -62,15 +62,17 @@ You'll then recieve a JWT access_token to make API requests with in either the r
 
 When implementing an OAuth2 server you MUST make sure to secure your application. This means running all OAuth2 endpoints over HTTPS, this extension also hashes the client secret, authorization code, and access token. 
 
-  ### CLI TASK
+  ## CLI COMMANDS
 
-  You can preform a task via CLI
+  ### Create Client
   ```
   $ cd path/to/application/root
   ### Using the CLI
-  $ periodicjs ext periodicjs.ext.oauth2server hello  
+  $ periodicjs ext periodicjs.ext.oauth2server createClient my-oauth2-client  
+  $ periodicjs ext periodicjs.ext.oauth2server createclient my-oauth2-client  
+  $ periodicjs ext periodicjs.ext.oauth2server cc my-oauth2-client  
   ### Calling Manually
-  $ node index.js --cli --command --ext --name=periodicjs.ext.oauth2server --task=hello 
+  $ node index.js --cli --command --ext --name=periodicjs.ext.oauth2server --task=createClient --args=my-oauth2-client
   ```
 
   ## Configuration
@@ -127,3 +129,5 @@ When implementing an OAuth2 server you MUST make sure to secure your application
   ## Notes
   * Check out https://github.com/typesettin/periodicjs for the full Periodic Documentation
   * Special thanks to [scott k smith](http://scottksmith.com/blog/2014/07/02/beer-locker-building-a-restful-api-with-node-oauth2-server/)
+  * TODOS
+    * reset login attempts

@@ -1,41 +1,53 @@
 'use strict';
-const oauth2orize = require('oauth2orize');
+const jwt = require('jwt-simple');
+const moment = require('moment');
 const Promisie = require('promisie');
-const RateLimit = require('express-rate-limit');
-const RedisStore = require('rate-limit-redis');
+// const RateLimit = require('express-rate-limit');
+// const RedisStore = require('rate-limit-redis');
+const periodic = require('periodicjs');
+const passportExtSettings = periodic.settings.extensions['periodicjs.ext.passport'];
+const oauth2serverExtSettings = periodic.settings.extensions['periodicjs.ext.oauth2server'];
 /**
  * validates user password
  * @return {object}        Promise for saving token
  */
 function validateUserForUnauthenticatedRequest(options = {}) {
-  if (!options.user) return Promisie.reject(new Error('Invalid credentials'));
-  let comparePassword = function() {
-    return Promisie.promisify(options.user.comparePassword, options.user)(options.password)
-      .then(isMatch => {
-        if (isMatch) {
-          if (options.user.extensionattributes && options.user.extensionattributes.login && options.user.extensionattributes.login.attempts) {
-            options.user.extensionattributes.login.attempts = 0;
-            options.user.markModified('extensionattributes');
-            options.user.save();
-          }
-          return options;
-        }
-        return Promisie.reject(new Error('Invalid credentials'));
-      })
-      .catch(e => Promisie.reject(e));
-  };
-  if (loginExtSettings.timeout.use_limiter) {
-    let limitAttemptUser = limitLoginAttempts(options.user);
-    return Promisie.promisify(limitAttemptUser.save, limitAttemptUser)()
-      .then(result => {
-        if (result && result.extensionattributes && result.extensionattributes.login && result.extensionattributes.login.flagged) {
-          return Promisie.promisify(loginAttemptsError)(result);
-        }
-        return comparePassword();
-      })
-      .catch(e => Promisie.reject(e));
-  }
-  return comparePassword();
+  return new Promise((resolve, reject) => {
+    try {
+      const { user, password, } = options;
+      if (!user) {
+        return reject(new Error('Invalid credentials'));
+      } else {
+        periodic.utilities.auth.comparePassword({
+            candidatePassword: user.password,
+            userPassword: password,
+          })
+          .then(isMatch => {
+            if (isMatch) {
+              if (passportExtSettings.timeout.use_limiter) {
+                //   let limitAttemptUser = limitLoginAttempts(options.user);
+                //   return Promisie.promisify(limitAttemptUser.save, limitAttemptUser)()
+                //     .then(result => {
+                //       if (result && result.extensionattributes && result.extensionattributes.login && result.extensionattributes.login.flagged) {
+                //         return Promisie.promisify(loginAttemptsError)(result);
+                //       }
+                //       return comparePassword();
+                //     })
+                //     .catch(e => Promisie.reject(e));
+                // }
+
+                //TODO: RESET user login attempts;
+                return resolve(options);
+              } else {
+                return reject(new Error('Invalid user account credentials'));
+              }
+            }
+          }).catch(reject);
+      }
+    } catch (e) {
+      reject(e);
+    }
+  });
 }
 
 /**
@@ -43,22 +55,37 @@ function validateUserForUnauthenticatedRequest(options = {}) {
  * @return {object}        Promise for finding db user
  */
 function getUserForUnauthenticatedRequest(options = {}) {
-  if (!options.username || !options.password) return Promisie.reject(new Error('Authentication Error'));
-  return new Promisie((resolve, reject) => {
-    options.modelToQuery.findOne(options.userQuery, {
-        'primaryasset.changes': 0,
-        'primaryasset.content': 0,
-        'assets.changes': 0,
-        '__v': 0,
-        changes: 0,
-        content: 0,
-      })
-      .populate('tags categories contenttypes assets primaryasset')
-      .exec((err, user) => {
-        if (err) reject(err);
-        else resolve(Object.assign(options, { user, }));
-      });
-  });
+  if (!options.username || !options.password) {
+    return Promisie.reject(new Error('Authentication Error'));
+  } else {
+    return new Promise((resolve, reject) => {
+      try {
+        const { /*client, req, username, password, */ query, entitytype, } = options;
+        const userAccountCoreData = periodic.locals.extensions.get('periodicjs.ext.passport').auth.getAuthCoreDataModel({ entitytype, }); //get from req
+
+        userAccountCoreData.load({
+            query,
+            population: ' ',
+            fields: {
+              'primaryasset.changes': 0,
+              'primaryasset.content': 0,
+              'assets.changes': 0,
+              '__v': 0,
+              changes: 0,
+              content: 0,
+            },
+          })
+          .then(userAccount => {
+            //checkifuser
+            //comparepassword
+            resolve(Object.assign(options, { user: userAccount, }));
+          })
+          .catch(reject);
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
 }
 
 /**
@@ -66,29 +93,41 @@ function getUserForUnauthenticatedRequest(options = {}) {
  * @return {object}        Promise for saving token
  */
 function saveTokenForAuthenticatedUser(options = {}) {
-  try {
-    let expires = moment().add(oauth2serverExtSettings.jwt.expire_duration, oauth2serverExtSettings.jwt.expire_period).valueOf();
-    let jwtTokenSecret = (oauth2serverExtSettings.jwt.custom_secret) ? oauth2serverExtSettings.jwt.custom_secret : appSettings.session_secret;
-    let jwt_token = jwt.encode({
-      iss: options.user._id,
-      ent: options.user.entitytype,
-      exp: expires,
-    }, jwtTokenSecret);
-    let token = new Token({
-      client_id: options.client.client_id,
-      user_id: options.user._id,
-      user_username: options.user.username,
-      user_email: options.user.email,
-      expires: new Date(expires),
-      user_entity_type: options.user.entitytype,
-      value: jwt_token,
-    });
-    return Promisie.promisify(token.save, token)()
-      .then(() => Object.assign(options, { jwt_token, expires, }))
-      .catch(e => Promisie.reject(e));
-  } catch (e) {
-    return Promisie.reject(e);
-  }
+  return new Promise((resolve, reject) => {
+    try {
+      const TokenCoreData = periodic.datas.get('standard_token');
+      const expires = moment().add(oauth2serverExtSettings.jwt.expire_duration, oauth2serverExtSettings.jwt.expire_period).valueOf();
+      const jwtTokenSecret = (oauth2serverExtSettings.jwt.custom_secret) ?
+        oauth2serverExtSettings.jwt.custom_secret :
+        periodic.settings.express.sessions.config.secret;
+      const jwt_token = jwt.encode({
+        iss: options.user._id,
+        ent: options.user.entitytype,
+        exp: expires,
+      }, jwtTokenSecret);
+      const newdoc = {
+        client_id: options.client.client_id,
+        user_id: options.user._id,
+        user_username: options.user.username,
+        user_email: options.user.email,
+        expires: new Date(expires),
+        user_entity_type: options.user.entitytype,
+        value: jwt_token,
+      };
+
+      TokenCoreData
+        .create({
+          newdoc,
+        })
+        .then(token => {
+          // console.log('in code callback', { token, });
+          return resolve(Object.assign(options, { jwt_token, expires, }));
+        })
+        .catch(reject);
+    } catch (e) {
+      return reject(e);
+    }
+  });
 }
 
 /**
@@ -131,6 +170,28 @@ function getClientIdFromAuthorizationHeader(authHeader) {
 //   prefix: oauth2serverExtSettings.rate_limiter.prefix
 // });
 
+function findOneClient(options) {
+  return new Promise((resolve, reject) => {
+    try {
+      const { clientId, } = options;
+      const ClientCoreData = periodic.datas.get('standard_client');
+      ClientCoreData.load({
+          query: { client_id: clientId, },
+        })
+        .then(client => {
+          if (!client) {
+            reject(new Error('Invalid OAuth2 Client'));
+          } else {
+            resolve(client);
+          }
+        })
+        .catch(reject);
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
 module.exports = {
   validateUserForUnauthenticatedRequest,
   getUserForUnauthenticatedRequest,
@@ -138,4 +199,5 @@ module.exports = {
   getCustomRateLimits,
   clientIdAuthHeaderMap,
   getClientIdFromAuthorizationHeader,
+  findOneClient,
 };

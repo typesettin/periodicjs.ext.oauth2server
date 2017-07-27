@@ -1,8 +1,12 @@
 'use strict';
+const jwt = require('jwt-simple');
 const periodic = require('periodicjs');
 const passport = periodic.locals.extensions.get('periodicjs.ext.passport').passport;
 const utilities = require('../utilities');
-const authUtil = utilities.auth;
+// const authUtil = utilities.auth;
+const appenvironment = periodic.settings.application.environment;
+const logger = periodic.logger;
+const oauth2serverExtSettings = periodic.settings.extensions['periodicjs.ext.oauth2server'];
 
 function getClientAuthHeaders(req, res, next) {
   var username;
@@ -24,7 +28,7 @@ function getClientAuthHeaders(req, res, next) {
 const isClientAuthenticated = [
   limitApiRequests,
   getClientAuthHeaders,
-  passport.authenticate('client-basic', { session: false })
+  passport.authenticate('client-basic', { session: false, }),
 ];
 
 
@@ -35,8 +39,7 @@ const isClientAuthenticated = [
  * @param {Function} next express middleware callback function
  */
 function isJWTAuthenticated(req, res, next) {
-  var UserModelToQuery;
-  var jwtTokenSecret = (oauth2serverExtSettings.jwt.custom_secret) ? oauth2serverExtSettings.jwt.custom_secret : appSettings.session_secret;
+  const jwtTokenSecret = (oauth2serverExtSettings.jwt.custom_secret) ? oauth2serverExtSettings.jwt.custom_secret : periodic.settings.express.sessions.config.secret;
 
   /**
    * Take the token from:
@@ -46,31 +49,39 @@ function isJWTAuthenticated(req, res, next) {
    *  - the x-access-token header
    *    ...in that order.
    */
-  var token = (req.body && req.body.access_token) || req.query.access_token || req.headers['x-access-token'];
-  // console.log('token',token);
+  const token = (req.body && req.body.access_token) || req.query.access_token || req.headers['x-access-token'];
   if (token) {
-
     try {
-      var decoded = jwt.decode(token, jwtTokenSecret);
-
+      const decoded = jwt.decode(token, jwtTokenSecret);
+      const entitytype = decoded.ent;
+      const userAccountCoreData = periodic.locals.extensions.get('periodicjs.ext.passport').auth.getAuthCoreDataModel({ entitytype, }); //get from req
       if (decoded.exp <= Date.now()) {
         res.status(400).send('Access token has expired', 400);
       } else {
-        UserModelToQuery = mongoose.model(capitalize(decoded.ent));
-        UserModelToQuery.findOne({ '_id': decoded.iss }).select({ changes: 0, password: 0 }).populate('primaryasset').exec(function(err, user) {
-          if (!err) {
+        userAccountCoreData.load({
+          query:{ '_id': decoded.iss, },
+          fields: {
+            'primaryasset.changes': 0,
+            'primaryasset.content': 0,
+            'assets.changes': 0,
+            '__v': 0,
+            changes: 0,
+            content: 0,
+          },
+        })
+          .then(user => { 
             req.user = user;
             return next();
-          }
-        });
+          })
+          .catch(next);
       }
     } catch (err) {
-      return next();
+      return next(err);
     }
   } else {
     next();
   }
-};
+}
 
 function getJWTProfile(req, res, next) {
   next();
@@ -163,8 +174,8 @@ function fakeSessions(req, res, next) { //fake session   etpzo33U
     // console.log('req.session after body append', req.session);
   }
   res.redirect = (location) => {
-    console.log('overwrite res.redirect', { location });
-    res.status(200).send({ location });
+    console.log('overwrite res.redirect', { location, });
+    res.status(200).send({ location, });
   };
   // console.log('req.session', req.session);
   next();
@@ -184,37 +195,41 @@ function asyncUser(req, res, next) {
  * @param {object}   res  express response object
  */
 function getJWTtoken(req, res) {
-  let username = req.body.username || req.headers.username;
-  let clientId = req.body.clientid || req.headers.clientid;
-  let password = req.body.password || req.headers.password;
-  let userQuery = {
+  const username = req.body.username || req.headers.username || req.body.name || req.headers.name;
+  const clientId = req.body.clientid || req.headers.clientid;
+  const password = req.body.password || req.headers.password;
+  const query = {
     $or: [{
-      username: new RegExp(username, 'i')
+      name: username,
     }, {
-      email: new RegExp(username, 'i')
-    }]
+      email: username,
+    },],
   };
-  let entitytype = req.body.entitytype || req.headers.entitytype || 'user';
-  let UserModelToQuery = mongoose.model(capitalize(entitytype));
-  findOneClient = (findOneClient) ? findOneClient : Promisie.promisify(Client.findOne, Client);
-  return findOneClient({ client_id: clientId })
-    .then(client => getUserForUnauthenticatedRequest({ client, req, modelToQuery: UserModelToQuery, username, password, userQuery }))
-    .then(validateUserForUnauthenticatedRequest)
-    .then(saveTokenForAuthenticatedUser)
+  const entitytype = req.body.entitytype || req.headers.entitytype || 'user';
+  // const UserModelToQuery = mongoose.model(capitalize(entitytype));
+  // findOneClient = (findOneClient) ? findOneClient : Promisie.promisify(Client.findOne, Client);
+  // console.log('getJWTtoken', { username, clientId, password, query, entitytype, });
+
+  return utilities.auth.findOneClient({ clientId, })
+    .then(client => utilities.auth.getUserForUnauthenticatedRequest({ client, req, query, username, password, entitytype, }))
+    .then(utilities.auth.validateUserForUnauthenticatedRequest)
+    .then(utilities.auth.saveTokenForAuthenticatedUser)
     .then(result => {
+      // console.log('getJWTtoken', { result, });
       res.status(200).json({
         token: result.jwt_token,
         expires: result.expires,
         timeout: new Date(result.expires),
-        user: (typeof result.user.toJSON() === 'function') ? result.user.toJSON() : result.user
+        user: (result.user && result.user.toJSON && typeof result.user.toJSON() === 'function') ?
+          result.user.toJSON() : result.user,
       });
     })
     .catch(e => {
-      let errortosend = (appenvironment === 'production') ? { message: e.message } : e;
+      let errortosend = (appenvironment === 'production') ? { message: e.message, } : e;
       logger.error('there was an authentication error', e);
       res.status(401).send(errortosend);
     });
-};
+}
 
 /**
  * returns rate limiter middleware with configured settings based on client, or default settings if headers have no client_id
@@ -223,39 +238,44 @@ function getJWTtoken(req, res) {
  * @param {Function} next express middleware callback function
  */
 function limitApiRequests(req, res, next) {
-  let cannot_connect_to_redis = (rateLimitStore) ? true : false;
-  if (oauth2serverExtSettings.use_rate_limit === false || cannot_connect_to_redis) {
-    next();
-  } else if ((req.headers.client_id || (req.headers.authorization && req.headers.authorization.substr(0, 6) === 'Basic ')) && user_based_rate_limits) {
-    if (!req.headers.client_id) {
-      req.headers.client_id = get_client_id_from_authorization_header(req.headers.authorization);
-    }
-    let client = user_based_rate_limits.clients[req.headers.client_id.toString()];
-    let client_limits = {
-      store: rateLimitStore,
-      max: client.max,
-      windowMs: oauth2serverExtSettings.rate_limiter.windowMs,
-      delayMs: client.delayMs,
-      keyGenerator: function(req) {
-        return req.body.client_id || req.headers.authorization || req.body.client_secret || req.body.access_token || req.query.access_token || req.headers['x-access-token'] || req.ip;
-      }
-    }
-    let limiter = new RateLimit(client_limits);
-    return limiter(req, res, next);
-  } else {
-    let config_limits = {
-      store: rateLimitStore,
-      max: oauth2serverExtSettings.rate_limiter.max,
-      windowMs: oauth2serverExtSettings.rate_limiter.windowMs,
-      delayMs: oauth2serverExtSettings.rate_limiter.delayMs,
-      keyGenerator: function(req) {
-        return req.headers.authorization || req.body.client_secret || req.body.client_id || req.body.access_token || req.query.access_token || req.headers['x-access-token'] || req.ip;
-      }
-    };
-    let config_from_settings = {};
-    let limiter = new RateLimit(Object.assign(config_limits, config_from_settings));
-    return limiter(req, res, next);
-  }
+  // try {
+  //   let cannot_connect_to_redis = (rateLimitStore) ? true : false;
+  //   if (oauth2serverExtSettings.use_rate_limit === false || cannot_connect_to_redis) {
+  //     next();
+  //   } else if ((req.headers.client_id || (req.headers.authorization && req.headers.authorization.substr(0, 6) === 'Basic ')) && user_based_rate_limits) {
+  //     if (!req.headers.client_id) {
+  //       req.headers.client_id = get_client_id_from_authorization_header(req.headers.authorization);
+  //     }
+  //     let client = user_based_rate_limits.clients[req.headers.client_id.toString()];
+  //     let client_limits = {
+  //       store: rateLimitStore,
+  //       max: client.max,
+  //       windowMs: oauth2serverExtSettings.rate_limiter.windowMs,
+  //       delayMs: client.delayMs,
+  //       keyGenerator: function(req) {
+  //         return req.body.client_id || req.headers.authorization || req.body.client_secret || req.body.access_token || req.query.access_token || req.headers['x-access-token'] || req.ip;
+  //       }
+  //     }
+  //     let limiter = new RateLimit(client_limits);
+  //     return limiter(req, res, next);
+  //   } else {
+  //     let config_limits = {
+  //       store: rateLimitStore,
+  //       max: oauth2serverExtSettings.rate_limiter.max,
+  //       windowMs: oauth2serverExtSettings.rate_limiter.windowMs,
+  //       delayMs: oauth2serverExtSettings.rate_limiter.delayMs,
+  //       keyGenerator: function(req) {
+  //         return req.headers.authorization || req.body.client_secret || req.body.client_id || req.body.access_token || req.query.access_token || req.headers['x-access-token'] || req.ip;
+  //       }
+  //     };
+  //     let config_from_settings = {};
+  //     let limiter = new RateLimit(Object.assign(config_limits, config_from_settings));
+  //     return limiter(req, res, next);
+  //   }
+  // } catch (e) {
+  logger.warn('FIX LIMIT API REQUESTS');
+  next();
+  // }
 }
 
 function bearerAuth(req, res, next) {
@@ -263,7 +283,7 @@ function bearerAuth(req, res, next) {
   if (req.user) {
     next();
   } else {
-    return passport.authenticate('bearer', { session: false })(req, res, next);
+    return passport.authenticate('bearer', { session: false, })(req, res, next);
   }
 }
 
@@ -291,7 +311,7 @@ function checkIsAuthenticated(req, res, next) {
 
 const isAuthenticated = [
   checkIsAuthenticated,
-  passport.authenticate(['bearer'], { session: false }),
+  passport.authenticate(['bearer',], { session: false, }),
 ];
 
 module.exports = {
@@ -299,7 +319,7 @@ module.exports = {
   getClientAuthHeaders,
   isClientAuthenticated,
   isJWTAuthenticated,
-  isBearerAuthenticated: passport.authenticate('bearer', { session: false }),
+  isBearerAuthenticated: passport.authenticate('bearer', { session: false, }),
   isAuthenticated,
   getJWTProfile,
   getUserProfile,
