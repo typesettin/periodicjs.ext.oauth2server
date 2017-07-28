@@ -59,17 +59,17 @@ function isJWTAuthenticated(req, res, next) {
         res.status(400).send('Access token has expired', 400);
       } else {
         userAccountCoreData.load({
-          query:{ '_id': decoded.iss, },
-          fields: {
-            'primaryasset.changes': 0,
-            'primaryasset.content': 0,
-            'assets.changes': 0,
-            '__v': 0,
-            changes: 0,
-            content: 0,
-          },
-        })
-          .then(user => { 
+            query: { '_id': decoded.iss, },
+            fields: {
+              'primaryasset.changes': 0,
+              'primaryasset.content': 0,
+              'assets.changes': 0,
+              '__v': 0,
+              changes: 0,
+              content: 0,
+            },
+          })
+          .then(user => {
             req.user = user;
             return next();
           })
@@ -203,7 +203,7 @@ function getJWTtoken(req, res) {
       name: username,
     }, {
       email: username,
-    },],
+    }, ],
   };
   const entitytype = req.body.entitytype || req.headers.entitytype || 'user';
   // const UserModelToQuery = mongoose.model(capitalize(entitytype));
@@ -279,7 +279,6 @@ function limitApiRequests(req, res, next) {
 }
 
 function bearerAuth(req, res, next) {
-  // console.log('req.user', req.user);
   if (req.user) {
     next();
   } else {
@@ -311,7 +310,7 @@ function checkIsAuthenticated(req, res, next) {
 
 const isAuthenticated = [
   checkIsAuthenticated,
-  passport.authenticate(['bearer',], { session: false, }),
+  passport.authenticate(['bearer', ], { session: false, }),
 ];
 
 module.exports = {

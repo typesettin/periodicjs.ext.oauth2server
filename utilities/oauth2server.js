@@ -2,6 +2,7 @@
 const oauth2orize = require('oauth2orize');
 const periodic = require('periodicjs');
 const oauth2util = require('./oauth2');
+const passportLocals = periodic.locals.extensions.get('periodicjs.ext.passport');
 
 function getCodeCoreData() {
   return periodic.datas.get('standard_code');
@@ -216,8 +217,8 @@ function basicStrategy(username, password, callback) {
  * @return {function} callback with user from db
  */
 function bearerStrategy(accessToken, callback) {
-  var UserModelToQuery;
-  getClientCoreData().load({
+  // console.log({ accessToken })
+  getTokenCoreData().load({
       query: {
         value: accessToken,
       },
@@ -226,17 +227,22 @@ function bearerStrategy(accessToken, callback) {
       if (!token) { // No token found
         return callback(null, false);
       } else {
-        UserModelToQuery = mongoose.model(capitalize(token.user_entity_type));
-        UserModelToQuery.findOne({ _id: token.user_id, }, function(err, user) {
-          if (err) {
-            return callback(err);
-          } else if (!user) { // No user found
-            return callback(null, false);
-          } else {
-            // Simple example with no scope
-            callback(null, user, { scope: '*', });
-          }
-        });
+        // console.log({ token });
+        const coreDataModel = passportLocals.auth.getAuthCoreDataModel({ entitytype: token.user_entity_type, });
+
+        coreDataModel.load({
+            query: { _id: token.user_id, },
+          })
+          .then(user => {
+            if (!user) { // No user found
+              return callback(null, false);
+            } else {
+              // Simple example with no scope
+              callback(null, user, { scope: '*', });
+            }
+          })
+          .catch(callback);
+
       }
     })
     .catch(callback);

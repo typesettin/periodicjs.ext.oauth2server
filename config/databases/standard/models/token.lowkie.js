@@ -29,6 +29,6 @@ module.exports = {
     docid: ['_id', ],
     sort: { createdat: -1, },
     search: ['user_email', 'value', 'client_id', ],
-    population: 'user_id',
+    // population: 'user_id',
   },
 };
