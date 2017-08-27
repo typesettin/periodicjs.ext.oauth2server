@@ -19,9 +19,9 @@ function validateUserForUnauthenticatedRequest(options = {}) {
         return reject(new Error('Invalid credentials'));
       } else {
         periodic.utilities.auth.comparePassword({
-            candidatePassword: user.password,
-            userPassword: password,
-          })
+          candidatePassword: user.password,
+          userPassword: password,
+        })
           .then(isMatch => {
             if (isMatch) {
               if (passportExtSettings.timeout.use_limiter) {
@@ -39,8 +39,10 @@ function validateUserForUnauthenticatedRequest(options = {}) {
                 //TODO: RESET user login attempts;
                 return resolve(options);
               } else {
-                return reject(new Error('Invalid user account credentials'));
+                return resolve(options);
               }
+            }else {
+              return reject(new Error('Invalid user account credentials'));
             }
           }).catch(reject);
       }
@@ -64,17 +66,17 @@ function getUserForUnauthenticatedRequest(options = {}) {
         const userAccountCoreData = periodic.locals.extensions.get('periodicjs.ext.passport').auth.getAuthCoreDataModel({ entitytype, }); //get from req
 
         userAccountCoreData.load({
-            query,
-            population: ' ',
-            fields: {
-              'primaryasset.changes': 0,
-              'primaryasset.content': 0,
-              'assets.changes': 0,
-              '__v': 0,
-              changes: 0,
-              content: 0,
-            },
-          })
+          query,
+          population: ' ',
+          fields: {
+            'primaryasset.changes': 0,
+            'primaryasset.content': 0,
+            'assets.changes': 0,
+            '__v': 0,
+            changes: 0,
+            content: 0,
+          },
+        })
           .then(userAccount => {
             //checkifuser
             //comparepassword
@@ -176,8 +178,8 @@ function findOneClient(options) {
       const { clientId, } = options;
       const ClientCoreData = periodic.datas.get('standard_client');
       ClientCoreData.load({
-          query: { client_id: clientId, },
-        })
+        query: { client_id: clientId, },
+      })
         .then(client => {
           if (!client) {
             reject(new Error('Invalid OAuth2 Client'));
