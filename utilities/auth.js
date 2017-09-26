@@ -63,11 +63,13 @@ function getUserForUnauthenticatedRequest(options = {}) {
     return new Promise((resolve, reject) => {
       try {
         let { /*client, req, username, password, */ query, entitytype, } = options;
-        query['$or'] = query['$or'].map(i => {
-          if (i.name) i.name = i.name.toLowerCase();
-          if (i.email) i.email = i.email.toLowerCase();
-          return i;
-        });
+        query['$or'] = (query['$or'] && Array.isArray(query['$or']) ) 
+          ? query['$or'].map(i => {
+            if (i.name && typeof i.name === 'string') i.name = i.name.toLowerCase();
+            if (i.email && typeof i.email === 'string') i.email = i.email.toLowerCase();
+            return i;
+          })
+          : query['$or'];
         const userAccountCoreData = periodic.locals.extensions.get('periodicjs.ext.passport').auth.getAuthCoreDataModel({ entitytype, }); //get from req
 
         userAccountCoreData.load({
