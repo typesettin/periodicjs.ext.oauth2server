@@ -21,8 +21,6 @@ const scheme = {
     },
     user_id: {
         type: Sequelize.INTEGER,
-        // type: ObjectId,
-        // ref: 'User'
     },
     user_entity_type: {
         type: Sequelize.STRING,
