@@ -19,11 +19,11 @@ const scheme = {
         //   unique: true
         // }
     },
-    // user_id: {
-    //   type: Sequelize.INTEGER,
-    //   // type: ObjectId,
-    //   // ref: 'User'
-    // },
+    user_id: {
+        type: Sequelize.INTEGER,
+        // type: ObjectId,
+        // ref: 'User'
+    },
     user_entity_type: {
         type: Sequelize.STRING,
         'default': 'user',
@@ -93,14 +93,7 @@ const options = {
     }, ],
 };
 
-const associations = [{
-    source: 'client',
-    association: 'hasOne',
-    target: 'user',
-    options: {
-        as: 'user_id',
-    },
-}, ];
+const associations = [];
 
 module.exports = {
     scheme,

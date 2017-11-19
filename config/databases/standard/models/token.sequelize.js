@@ -7,7 +7,7 @@ const scheme = {
         autoIncrement: true,
     },
     value: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         required: true,
     },
     user_id: {
@@ -16,13 +16,13 @@ const scheme = {
         // ref: 'User'
     },
     user_username: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
     },
     user_email: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
     },
     user_entity_type: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         'default': 'user',
     },
     expires: {
@@ -30,7 +30,7 @@ const scheme = {
         required: true,
     },
     client_id: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
     },
 };
 const options = {
