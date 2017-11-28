@@ -59,8 +59,10 @@ function isJWTAuthenticated(req, res, next) {
         res.status(400).send('Access token has expired', 400);
       } else {
         userAccountCoreData.load({
-            query: { '_id': decoded.iss, },
-            fields: {
+          query: { '_id': decoded.iss, },
+          fields: (periodic.settings.databases.standard.db === 'sequelize')
+            ? undefined
+            : {
               'primaryasset.changes': 0,
               'primaryasset.content': 0,
               'assets.changes': 0,
@@ -68,7 +70,7 @@ function isJWTAuthenticated(req, res, next) {
               changes: 0,
               content: 0,
             },
-          })
+        })
           .then(user => {
             req.user = user;
             return next();

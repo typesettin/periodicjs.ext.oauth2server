@@ -87,8 +87,10 @@ const options = {
   underscored: true,
   timestamps: true,
   indexes: [{
-    fields: ['createdat', ],
-  }, ],
+    fields: ['createdat'],
+  }],
+  createdAt: 'createdat',
+  updatedAt: 'updatedat',
 };
 
 const associations = [];
