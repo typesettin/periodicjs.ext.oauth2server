@@ -38,6 +38,9 @@ const scheme = {
     //   unique: true
     // }
   },
+  public_key: {
+    type: String,
+  },
   ip_addresses: {
     type: String,
     default: null,

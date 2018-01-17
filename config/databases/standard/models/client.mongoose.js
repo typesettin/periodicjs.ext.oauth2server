@@ -26,6 +26,12 @@ const scheme = {
       unique: true,
     },
   },
+  public_key: {
+    type: String,
+    index: {
+      unique: true,
+    },
+  },
   client_secret: {
     type: String,
     index: {

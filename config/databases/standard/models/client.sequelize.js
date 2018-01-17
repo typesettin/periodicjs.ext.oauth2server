@@ -44,6 +44,9 @@ const scheme = {
         //   unique: true
         // }
   },
+  public_key: {
+    type: Sequelize.STRING,
+  },
   ip_addresses: {
     type: Sequelize.STRING,
     default: null,
