@@ -32,6 +32,12 @@ const scheme = {
       unique: true,
     },
   },
+  client_secret_2: {
+    type: String,
+    index: {
+      unique: true,
+    },
+  },
   ip_addresses: {
     type: String,
     default: null,
@@ -60,6 +66,12 @@ const scheme = {
       default: false,
     },
   },
+  association: {
+    organization: {
+      type: ObjectId,
+      ref: 'Organization',
+    },
+  },
 };
 
 module.exports = {
@@ -69,6 +81,6 @@ module.exports = {
     docid: ['_id', 'name', 'client_id', ],
     sort: { createdat: -1, },
     search: ['title', 'name', 'client_id', 'ip_addresses', ],
-    population: 'user_id',
+    population: 'user_id association.organization',
   },
 };

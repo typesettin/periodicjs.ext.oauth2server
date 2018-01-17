@@ -38,6 +38,12 @@ const scheme = {
         //   unique: true
         // }
   },
+  client_secret_2: {
+    type: Sequelize.STRING,
+        // index: {
+        //   unique: true
+        // }
+  },
   ip_addresses: {
     type: Sequelize.STRING,
     default: null,
@@ -93,7 +99,16 @@ const options = {
   updatedAt: 'updatedat',
 };
 
-const associations = [];
+const associations = [
+  {
+    source: 'client',
+    association: 'hasOne',
+    target: 'organization',
+    options: {
+      as: 'org',
+    },
+  },
+];
 
 module.exports = {
   scheme,
