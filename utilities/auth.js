@@ -42,7 +42,7 @@ function validateUserForUnauthenticatedRequest(options = {}) {
                 return resolve(options);
               }
             }else {
-              return reject(new Error('Invalid user account credentials'));
+              return reject(new Error(oauth2serverExtSettings.messages.invalid_credentials));
             }
           }).catch(reject);
       }
