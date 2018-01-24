@@ -75,14 +75,16 @@ function getUserForUnauthenticatedRequest(options = {}) {
         userAccountCoreData.load({
           query,
           population: ' ',
-          fields: {
-            'primaryasset.changes': 0,
-            'primaryasset.content': 0,
-            'assets.changes': 0,
-            '__v': 0,
-            changes: 0,
-            content: 0,
-          },
+          fields: (periodic.settings.databases.standard.db === 'sequelize')
+            ? undefined
+            : {
+              'primaryasset.changes': 0,
+              'primaryasset.content': 0,
+              'assets.changes': 0,
+              '__v': 0,
+              changes: 0,
+              content: 0,
+            },
         })
           .then(userAccount => {
             //checkifuser

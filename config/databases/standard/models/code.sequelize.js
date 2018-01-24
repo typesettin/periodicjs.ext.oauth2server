@@ -7,38 +7,40 @@ const scheme = {
     autoIncrement: true,
   },
   value: {
-    type: Sequelize.INTEGER,
+    type: Sequelize.STRING,
     required: true,
   },
   user_id: {
     type: Sequelize.INTEGER,
-    // type: ObjectId,
-    // ref: 'User'
+        // type: ObjectId,
+        // ref: 'User'
   },
   user_username: {
-    type: Sequelize.INTEGER,
+    type: Sequelize.STRING,
   },
   user_email: {
-    type: Sequelize.INTEGER,
+    type: Sequelize.STRING,
   },
   user_entity_type: {
-    type: Sequelize.INTEGER,
+    type: Sequelize.STRING,
     'default': 'user',
   },
   redirect_uri: {
-    type: Sequelize.INTEGER,
+    type: Sequelize.STRING,
     required: true,
   },
   client_id: {
-    type: Sequelize.INTEGER,
+    type: Sequelize.STRING,
   },
 };
 const options = {
   underscored: true,
   timestamps: true,
   indexes: [{
-    fields: ['createdat', ],
-  }, ],
+    fields: ['createdat'],
+  }],
+  createdAt: 'createdat',
+  updatedAt: 'updatedat',
 };
 // const associations = [{
 //   source: 'code',
@@ -52,11 +54,11 @@ const options = {
 module.exports = {
   scheme,
   options,
-  // associations,
+  associations: [],
   coreDataOptions: {
     docid: ['_id', 'client_id', ],
     sort: { createdat: -1, },
-    search: ['user_email', 'value', 'client_id', 'redirect_uri'],
-    // population: 'user_id',
+    search: ['user_email', 'value', 'client_id', 'redirect_uri', ],
+        // population: 'user_id',
   },
 };
