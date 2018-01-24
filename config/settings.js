@@ -21,6 +21,9 @@ module.exports = {
         code: 429,
       }),
     },
+    messages: {
+      invalid_credentials: 'Invalid user account credentials',
+    },
     use_rate_limits: false,
   },
   databases: {},
