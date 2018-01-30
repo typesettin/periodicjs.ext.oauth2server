@@ -16,7 +16,7 @@ function validateUserForUnauthenticatedRequest(options = {}) {
     try {
       const { user, password, } = options;
       if (!user) {
-        return reject(new Error('Invalid credentials'));
+        return reject(new Error(oauth2serverExtSettings.messages.invalid_credentials));
       } else {
         periodic.utilities.auth.comparePassword({
           candidatePassword: user.password,
