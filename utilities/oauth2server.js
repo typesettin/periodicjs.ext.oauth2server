@@ -199,7 +199,7 @@ function basicStrategy(username, password, callback) {
       },
     })
     .then(client => {
-      if (!client || client.client_secret !== password) {
+      if (!client || (client.client_secret !== password && client.client_secret_2 !== password)) {
         // No client found with that id or bad password
         return callback(null, false);
       } else {
