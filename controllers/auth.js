@@ -40,7 +40,6 @@ const isClientAuthenticated = [
  */
 function isJWTAuthenticated(req, res, next) {
   const jwtTokenSecret = (oauth2serverExtSettings.jwt.custom_secret) ? oauth2serverExtSettings.jwt.custom_secret : periodic.settings.express.sessions.config.secret;
-
   /**
    * Take the token from:
    * 
@@ -200,7 +199,8 @@ function getJWTtoken(req, res) {
   const username = req.body.username || req.headers.username || req.body.name || req.headers.name;
   const clientId = req.body.clientid || req.headers.clientid;
   const password = req.body.password || req.headers.password;
-  const query = {
+  const organization = req.body.organization || req.headers.organization;
+  let query = {
     $or: [{
       name: username,
     }, {
@@ -213,7 +213,7 @@ function getJWTtoken(req, res) {
   // console.log('getJWTtoken', { username, clientId, password, query, entitytype, });
 
   return utilities.auth.findOneClient({ clientId, })
-    .then(client => utilities.auth.getUserForUnauthenticatedRequest({ client, req, query, username, password, entitytype, }))
+    .then(client => utilities.auth.getUserForUnauthenticatedRequest({ client, req, query, username, password, organization, entitytype, }))
     .then(utilities.auth.validateUserForUnauthenticatedRequest)
     .then(utilities.auth.saveTokenForAuthenticatedUser)
     .then(result => {
