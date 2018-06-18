@@ -295,7 +295,7 @@ const checkApiAuthentication = [
   function(req, res, next) {
     req.controllerData = req.controllerData || {};
     req.controllerData.skip_session = true;
-    if (req.body.use_session = true) {
+    if (req.body && req.body.use_session === true) {
       req.controllerData.skip_session = false;
     }
     next();
