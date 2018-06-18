@@ -38,15 +38,15 @@ const scheme = {
         //   unique: true
         // }
   },
-  client_secret_2: {
-    type: Sequelize.STRING,
-        // index: {
-        //   unique: true
-        // }
-  },
-  public_key: {
-    type: Sequelize.STRING,
-  },
+  // client_secret_2: {
+  //   type: Sequelize.STRING,
+  //       // index: {
+  //       //   unique: true
+  //       // }
+  // },
+  // public_key: {
+  //   type: Sequelize.STRING,
+  // },
   ip_addresses: {
     type: Sequelize.STRING,
     default: null,
@@ -103,14 +103,14 @@ const options = {
 };
 
 const associations = [
-  {
-    source: 'client',
-    association: 'hasOne',
-    target: 'organization',
-    options: {
-      as: 'org',
-    },
-  },
+  // {
+  //   source: 'client',
+  //   association: 'hasOne',
+  //   target: 'organization',
+  //   options: {
+  //     as: 'org',
+  //   },
+  // },
 ];
 
 module.exports = {

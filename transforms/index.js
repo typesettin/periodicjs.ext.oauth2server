@@ -18,6 +18,7 @@ module.exports = {
   pre: {
     POST: {
       '/b-admin/data/standard_clients': [createClientPreTransform, ],
+      '/contentdata/standard_clients': [createClientPreTransform, ],
     },
   },
   post: {},
