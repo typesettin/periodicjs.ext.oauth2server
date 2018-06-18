@@ -232,7 +232,7 @@ function getJWTtoken(req, res) {
       res.status(401).send(errortosend);
     });
 }
-
+let displayedLimitWarning = false;
 /**
  * returns rate limiter middleware with configured settings based on client, or default settings if headers have no client_id
  * @param {object}   req  express request object
@@ -275,7 +275,10 @@ function limitApiRequests(req, res, next) {
   //     return limiter(req, res, next);
   //   }
   // } catch (e) {
-  logger.warn('FIX LIMIT API REQUESTS');
+  if (displayedLimitWarning === false) {
+    logger.warn('FIX LIMIT API REQUESTS');
+    displayedLimitWarning = true;
+  }
   next();
   // }
 }
