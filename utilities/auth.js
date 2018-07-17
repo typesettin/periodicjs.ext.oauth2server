@@ -62,7 +62,7 @@ function getUserForUnauthenticatedRequest(options = {}) {
   } else {
     return new Promise((resolve, reject) => {
       try {
-        let { /*client, req, username, password, */ query, entitytype, } = options;
+        let { /*client, req, username, password, */ organization, query, entitytype, } = options;
         query['$or'] = (query['$or'] && Array.isArray(query['$or']) ) 
           ? query['$or'].map(i => {
             if (i.name && typeof i.name === 'string') i.name = i.name.toLowerCase();
@@ -71,8 +71,8 @@ function getUserForUnauthenticatedRequest(options = {}) {
           })
           : query['$or'];
         const userAccountCoreData = periodic.locals.extensions.get('periodicjs.ext.passport').auth.getAuthCoreDataModel({ entitytype, }); //get from req
-
-        userAccountCoreData.load({
+        if (organization) {
+          userAccountCoreData.query({
           query,
           population: ' ',
           fields: (periodic.settings.databases.standard.db === 'sequelize')
@@ -86,12 +86,38 @@ function getUserForUnauthenticatedRequest(options = {}) {
               content: 0,
             },
         })
-          .then(userAccount => {
-            //checkifuser
-            //comparepassword
+          .then(userAccounts => {
+            let userAccount;
+            userAccounts.forEach(userAcc => {
+              userAcc = userAcc.toJSON ? userAcc.toJSON() : userAcc;
+              if (userAcc.association && userAcc.association.organization && userAcc.association.organization.name && userAcc.association.organization.name.toString().toLowerCase() === organization.toString().toLowerCase()) userAccount = userAcc;
+            });
+
             resolve(Object.assign(options, { user: userAccount, }));
           })
           .catch(reject);
+        } else {
+          userAccountCoreData.load({
+            query,
+            population: ' ',
+            fields: (periodic.settings.databases.standard.db === 'sequelize')
+              ? undefined
+              : {
+                'primaryasset.changes': 0,
+                'primaryasset.content': 0,
+                'assets.changes': 0,
+                '__v': 0,
+                changes: 0,
+                content: 0,
+              },
+          })
+            .then(userAccount => {
+              //checkifuser
+              //comparepassword
+              resolve(Object.assign(options, { user: userAccount, }));
+            })
+            .catch(reject);
+        }
       } catch (e) {
         reject(e);
       }
