@@ -14,37 +14,41 @@ const oauth2serverExtSettings = periodic.settings.extensions['periodicjs.ext.oau
 function validateUserForUnauthenticatedRequest(options = {}) {
   return new Promise((resolve, reject) => {
     try {
-      const { user, password, } = options;
-      if (!user) {
-        return reject(new Error(oauth2serverExtSettings.messages.invalid_credentials));
+      const { user, password, req, } = options;
+      if (req.session.use_req_user_jwt && req.user) {
+        return resolve(options);
       } else {
-        periodic.utilities.auth.comparePassword({
-          candidatePassword: user.password,
-          userPassword: password,
-        })
-          .then(isMatch => {
-            if (isMatch) {
-              if (passportExtSettings.timeout.use_limiter) {
-                //   let limitAttemptUser = limitLoginAttempts(options.user);
-                //   return Promisie.promisify(limitAttemptUser.save, limitAttemptUser)()
-                //     .then(result => {
-                //       if (result && result.extensionattributes && result.extensionattributes.login && result.extensionattributes.login.flagged) {
-                //         return Promisie.promisify(loginAttemptsError)(result);
-                //       }
-                //       return comparePassword();
-                //     })
-                //     .catch(e => Promisie.reject(e));
-                // }
+        if (!user) {
+          return reject(new Error(oauth2serverExtSettings.messages.invalid_credentials));
+        } else {
+          periodic.utilities.auth.comparePassword({
+            candidatePassword: user.password,
+            userPassword: password,
+          })
+            .then(isMatch => {
+              if (isMatch) {
+                if (passportExtSettings.timeout.use_limiter) {
+                  //   let limitAttemptUser = limitLoginAttempts(options.user);
+                  //   return Promisie.promisify(limitAttemptUser.save, limitAttemptUser)()
+                  //     .then(result => {
+                  //       if (result && result.extensionattributes && result.extensionattributes.login && result.extensionattributes.login.flagged) {
+                  //         return Promisie.promisify(loginAttemptsError)(result);
+                  //       }
+                  //       return comparePassword();
+                  //     })
+                  //     .catch(e => Promisie.reject(e));
+                  // }
 
-                //TODO: RESET user login attempts;
-                return resolve(options);
+                  //TODO: RESET user login attempts;
+                  return resolve(options);
+                } else {
+                  return resolve(options);
+                }
               } else {
-                return resolve(options);
+                return reject(new Error(oauth2serverExtSettings.messages.invalid_credentials));
               }
-            }else {
-              return reject(new Error(oauth2serverExtSettings.messages.invalid_credentials));
-            }
-          }).catch(reject);
+            }).catch(reject);
+        }
       }
     } catch (e) {
       reject(e);
@@ -62,36 +66,40 @@ function getUserForUnauthenticatedRequest(options = {}) {
   } else {
     return new Promise((resolve, reject) => {
       try {
-        let { /*client, req, username, password, */ query, entitytype, } = options;
-        query['$or'] = (query['$or'] && Array.isArray(query['$or']) ) 
-          ? query['$or'].map(i => {
-            if (i.name && typeof i.name === 'string') i.name = i.name.toLowerCase();
-            if (i.email && typeof i.email === 'string') i.email = i.email.toLowerCase();
-            return i;
-          })
-          : query['$or'];
-        const userAccountCoreData = periodic.locals.extensions.get('periodicjs.ext.passport').auth.getAuthCoreDataModel({ entitytype, }); //get from req
+        let { /*client,  username, password, */ req, query, entitytype, } = options;
+        if (req.session.use_req_user_jwt && req.user) {
+          return resolve(Object.assign(options, { user: req.user, }));
+        } else {
+          query[ '$or' ] = (query[ '$or' ] && Array.isArray(query[ '$or' ]))
+            ? query[ '$or' ].map(i => {
+              if (i.name && typeof i.name === 'string') i.name = i.name.toLowerCase();
+              if (i.email && typeof i.email === 'string') i.email = i.email.toLowerCase();
+              return i;
+            })
+            : query[ '$or' ];
+          const userAccountCoreData = periodic.locals.extensions.get('periodicjs.ext.passport').auth.getAuthCoreDataModel({ entitytype, }); //get from req
 
-        userAccountCoreData.load({
-          query,
-          population: ' ',
-          fields: (periodic.settings.databases.standard.db === 'sequelize')
-            ? undefined
-            : {
-              'primaryasset.changes': 0,
-              'primaryasset.content': 0,
-              'assets.changes': 0,
-              '__v': 0,
-              changes: 0,
-              content: 0,
-            },
-        })
-          .then(userAccount => {
-            //checkifuser
-            //comparepassword
-            resolve(Object.assign(options, { user: userAccount, }));
+          userAccountCoreData.load({
+            query,
+            population: ' ',
+            fields: (periodic.settings.databases.standard.db === 'sequelize')
+              ? undefined
+              : {
+                'primaryasset.changes': 0,
+                'primaryasset.content': 0,
+                'assets.changes': 0,
+                '__v': 0,
+                changes: 0,
+                content: 0,
+              },
           })
-          .catch(reject);
+            .then(userAccount => {
+              //checkifuser
+              //comparepassword
+              resolve(Object.assign(options, { user: userAccount, }));
+            })
+            .catch(reject);
+        }
       } catch (e) {
         reject(e);
       }
